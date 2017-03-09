@@ -1,5 +1,5 @@
 # gumga-list-ng
-Gumga Many To One (Angular 1.x)
+Gumga List (Angular 1.x)
 
 ## Instalação:
 
