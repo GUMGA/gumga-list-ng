@@ -92,8 +92,8 @@ function List($compile, listCreator) {
         var column = rawColumn.trim(),
             configuration = columnsConfig.filter(function (value) {
           return value.name == column;
-        })[0] || { name: column },
-            title = configuration.title || column.charAt(0).toUpperCase() + column.slice(1),
+        })[0] || { name: column };
+        var title = configuration.title || column.charAt(0).toUpperCase() + column.slice(1),
             size = configuration.size || ' ',
             name = configuration.name || column,
             content = configuration.content || '{{$value.' + column + '}}',
@@ -105,7 +105,7 @@ function List($compile, listCreator) {
 
     // Garantindo que existam todos os atributos que podem ser passados via elemento.
     ctrl.data = ctrl.data || [];
-    ctrl.config = ctrl.config || {};
+    ctrl.listConfig = ctrl.listConfig || {};
     ctrl.sort = hasAttr('sort') ? ctrl.sort : angular.noop;
     ctrl.class = hasAttr('class') ? defaultCssClass.concat($attrs.class || ' ') : defaultCssClass;
     ctrl.onClick = hasAttr('onClick') ? ctrl.onClick : angular.noop;
@@ -115,13 +115,13 @@ function List($compile, listCreator) {
 
     // Garantindo que existam todas as configurações necessárias no objeto.
     function guaranteeConfig() {
-      ctrl.config.headers = ctrl.config.hasOwnProperty('headers') ? !!ctrl.config.headers : defaultHeaders;
-      ctrl.config.checkbox = !!ctrl.config.checkbox;
-      ctrl.config.selection = hasConfig('selection') ? ctrl.config.selection : defaultSelection;
-      ctrl.config.itemsPerPage = hasConfig('itemsPerPage') ? ctrl.config.itemsPerPage : defaultItemsPerPage;
-      ctrl.config.sortDefault = hasConfig('sortDefault') ? ctrl.config.sortDefault : defaultSortedColumn;
-      ctrl.config.conditional = hasConfig('conditional') ? ctrl.config.conditional : angular.noop;
-      ctrl.config.columnsConfig = guaranteeColumns(ctrl.config.columns, ctrl.config.columnsConfig);
+      ctrl.listConfig.headers = ctrl.listConfig.hasOwnProperty('headers') ? !!ctrl.listConfig.headers : defaultHeaders;
+      ctrl.listConfig.checkbox = !!ctrl.listConfig.checkbox;
+      ctrl.listConfig.selection = hasConfig('selection') ? ctrl.listConfig.selection : defaultSelection;
+      ctrl.listConfig.itemsPerPage = hasConfig('itemsPerPage') ? ctrl.listConfig.itemsPerPage : defaultItemsPerPage;
+      ctrl.listConfig.sortDefault = hasConfig('sortDefault') ? ctrl.listConfig.sortDefault : defaultSortedColumn;
+      ctrl.listConfig.conditional = hasConfig('conditional') ? ctrl.listConfig.conditional : angular.noop;
+      ctrl.listConfig.columnsConfig = guaranteeColumns(ctrl.listConfig.columns, ctrl.listConfig.columnsConfig);
     }
 
     // Tratamento de erros do componente.
@@ -145,7 +145,8 @@ function List($compile, listCreator) {
 
     $scope.$parent.selectedValues = ctrl.selectedValues;
 
-    $scope.$watch('ctrl.config', function () {
+    $scope.$watch('ctrl.config', function (value) {
+      ctrl.listConfig = angular.copy(value);
       guaranteeConfig();
       compileElement();
     });
@@ -192,7 +193,7 @@ function List($compile, listCreator) {
     }
 
     function updateSelected(selectedValues, wasAdded, oldSelectedValues) {
-      if (selectedValues.length > 1 && ctrl.config.selection == 'single') {
+      if (selectedValues.length > 1 && ctrl.listConfig.selection == 'single') {
         selectedValues = selectedValues.filter(function (value) {
           return !angular.equals(oldSelectedValues[0], value);
         });
@@ -230,7 +231,7 @@ function List($compile, listCreator) {
     }
 
     function conditional(value) {
-      var obj = ctrl.config.conditional(value);
+      var obj = ctrl.listConfig.conditional(value);
       var trueValue = void 0,
           falseValue = void 0;
       for (var key in obj) {
@@ -242,7 +243,7 @@ function List($compile, listCreator) {
     }
 
     function conditionalTableCell(value, ordering) {
-      var columnToGetTheConditional = ctrl.config.columnsConfig.filter(function (val) {
+      var columnToGetTheConditional = ctrl.listConfig.columnsConfig.filter(function (val) {
         return val.name == ordering;
       })[0];
 
@@ -281,11 +282,11 @@ function List($compile, listCreator) {
     function select(index) {
       var event = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { target: {} };
 
-      if (ctrl.config.selection != 'none') {
-        if (event.target.name == '$checkbox' && ctrl.config.selection == 'single') uncheckSelectedMap();
-        if (event.target.name == '$checkbox' && ctrl.config.selection == 'multi') ctrl.selectedMap[index].checkbox = !ctrl.selectedMap[index].checkbox;
+      if (ctrl.listConfig.selection != 'none') {
+        if (event.target.name == '$checkbox' && ctrl.listConfig.selection == 'single') uncheckSelectedMap();
+        if (event.target.name == '$checkbox' && ctrl.listConfig.selection == 'multi') ctrl.selectedMap[index].checkbox = !ctrl.selectedMap[index].checkbox;
         if (ctrl.checkAll) ctrl.checkAll = false;
-        if (ctrl.config.selection == 'single' && !ctrl.selectedMap[index].checkbox) uncheckSelectedMap();
+        if (ctrl.listConfig.selection == 'single' && !ctrl.selectedMap[index].checkbox) uncheckSelectedMap();
         ctrl.selectedMap[index].checkbox = !ctrl.selectedMap[index].checkbox;
         updateSelectedValues();
         ctrl.onClick({ $value: ctrl.selectedMap[index].value });
@@ -302,7 +303,7 @@ function List($compile, listCreator) {
     // Compilação do componente na tela.
     function compileElement() {
       $element.html('');
-      var element = angular.element(listCreator.mountTable(ctrl.config, ctrl.class));
+      var element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class));
       $element.append($compile(element)($scope));
     }
     try {
