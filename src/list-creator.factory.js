@@ -28,11 +28,7 @@ function ListCreator() {
   function generateHeader(config) {
     if (config.headers) {
       return `
-          <thead>
-            <tr>
               ${generateHeaderColumns(config.columnsConfig)}
-            </tr>
-          </thead>
         `
     } else { return '' }
   }

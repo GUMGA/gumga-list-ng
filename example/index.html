@@ -25,7 +25,7 @@ boewr install gumga-rest-ng
 boewr install gumga-controller-ng
 </pre>-->
 
-  <div class="row">
+  <!-- <div class="row"> -->
     <form name="Example">
       <br>
       <br>
@@ -39,10 +39,12 @@ boewr install gumga-controller-ng
             </button>
           </div>
         </div>
-        <gumga-list sort="pessoa.methods.sort(field, dir)" class="table-striped table-condensed" data="pessoa.data" configuration="tableConfig"></gumga-list>
+        <div>
+          <gumga-list sort="pessoa.methods.sort(field, dir)" class="table-striped table-condensed" data="pessoa.data" configuration="tableConfig"></gumga-list>
+        </div>
       </div>
     </form>
-  </div>
+  <!-- </div> -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -61,17 +63,22 @@ boewr install gumga-controller-ng
           var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
           gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
+
           $scope.pessoa.methods.get();
 
           $scope.changeColumns = function () {
-            $scope.tableConfig.columns = 'nomeFonetico, data, apelido, view'
+            $scope.tableConfig.columns = 'nomeFonetico, apelido,sexo, data, apelido, view'
             $scope.tableConfig = angular.copy($scope.tableConfig)
           }
 
           $scope.tableConfig = {
-            columns: 'nomeFonetico, data, view',
+            columns: 'nomeFonetico, apelido,sexo, data, view',
             // headers: false,
-            checkbox: true,
+            checkbox: false,
+            fixed: {
+              // right : 1,
+              left : 2
+            },
             selection: "multi",
             columnsConfig: [
               {
@@ -79,6 +86,18 @@ boewr install gumga-controller-ng
                 title: 'Nome fonetico',
                 content: '{{$value.nomeFonetico}}',
                 sortField: 'nomeFonetico'
+              },
+              {
+                name: 'apelido',
+                title: 'apelido',
+                content: '{{$value.apelido}}',
+                sortField: 'apelido'
+              },
+              {
+                name: 'sexo',
+                title: 'sexo',
+                content: '{{$value.sexo}}',
+                sortField: 'sexo'
               },
               {
                 name: 'data',
@@ -94,7 +113,7 @@ boewr install gumga-controller-ng
               },
               {
                 name: 'view',
-                title: ' ',
+                title: 'Ações',
                 content: '<span class="pull-right"><a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })"><i class="glyphicon glyphicon-eye-open"></i></a></span>'
               }
             ]

@@ -1,12 +1,13 @@
 require('./list-creator.factory.js')
+require('./grid.js')
 
 List.$inject = ['$compile', 'listCreator']
 
 function List($compile, listCreator){
 
-    controller.$inject = ['$scope', '$element', '$attrs']
+    controller.$inject = ['$scope', '$element', '$attrs', '$timeout']
 
-    function controller($scope, $element, $attrs){
+    function controller($scope, $element, $attrs, $timeout){
       let ctrl = this
 
       const errorMessages = {
@@ -81,11 +82,15 @@ function List($compile, listCreator){
 
       $scope.$watch('ctrl.config', (value) => {
         ctrl.listConfig = angular.copy(value);
-        guaranteeConfig()
+        guaranteeConfig();
         compileElement()
+        handlingGrid();
       })
 
-      $scope.$watch('ctrl.data', () => updateMap(ctrl.data), true)
+      $scope.$watch('ctrl.data', () => {
+          updateMap(ctrl.data);
+          handlingGrid();
+      }, true)
 
       $scope.$watch('ctrl.selectedValues', (newVal = [], oldVal = []) => updateSelected(newVal, newVal.length - oldVal.length >= 0, oldVal), true)
 
@@ -213,6 +218,12 @@ function List($compile, listCreator){
       try {
         compileElement()
       } catch(err){}
+
+      const handlingGrid = () => {
+        if(ctrl.listConfig.fixed){
+          $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
+        }
+      }
 
     }
 
