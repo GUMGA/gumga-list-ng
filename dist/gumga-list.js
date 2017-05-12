@@ -101,8 +101,7 @@
                 var setParent = function setParent() {
                     var parent = angular.element(settings.parent);
                     var table = angular.element(settings.table);
-
-                    parent.append(table);
+                    // parent.append(table);
                     parent.css({
                         'overflow-x': 'auto',
                         'overflow-y': 'auto'
@@ -116,14 +115,20 @@
                         var top = parent.scrollTop();
                         var left = parent.scrollLeft();
 
-                        if (settings.head) this.find("thead tr > *").css("top", top);
+                        if (settings.head) parent.find("thead tr > *").css("top", top);
 
-                        if (settings.foot) this.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
+                        if (settings.foot) parent.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
 
-                        if (settings.left > 0) settings.leftColumns.css("left", left);
+                        if (settings.left > 0) {
+                            settings.leftColumns.css("left", left);
+                            if (settings.class) settings.leftColumns.addClass(settings.class);
+                        }
 
-                        if (settings.right > 0) settings.rightColumns.css("right", scrollWidth - clientWidth - left);
-                    }.bind(table));
+                        if (settings.right > 0) {
+                            settings.rightColumns.css("right", scrollWidth - clientWidth - left);
+                            if (settings.class) settings.rightColumns.addClass(settings.class);
+                        }
+                    });
                 };
 
                 // Set table head fixed
@@ -133,7 +138,6 @@
                     var thead = angular.element(settings.table).find("thead");
                     var tr = thead.find("tr");
                     var cells = thead.find("tr > *");
-
                     setBackground(cells);
                     cells.css({
                         'position': 'relative'
@@ -160,19 +164,17 @@
                 var fixLeft = function fixLeft() {
                     var table = angular.element(settings.table);
                     settings.leftColumns = angular.element();
-                    var tr = table.find("tr");
+                    var tr = table.find("tr"),
+                        count = 0;
                     tr.each(function (k, row) {
-
                         solverLeftColspan(row, function (cell) {
-                            settings.leftColumns = settings.leftColumns.add(cell);
+                            if (settings.top == undefined || count < settings.top * settings.left) settings.leftColumns = settings.leftColumns.add(cell);
+                            if (cell[0] && cell[0].nodeName == 'TD') count++;
                         });
                     });
-
                     var column = settings.leftColumns;
-
                     column.each(function (k, cell) {
                         var cell = angular.element(cell);
-
                         setBackground(cell);
                         cell.css({
                             'position': 'relative'
@@ -225,7 +227,6 @@
 
                         var background = parentBackground ? parentBackground : "white";
                         background = elementBackground ? elementBackground : background;
-
                         element.css("background-color", background);
                     });
                 };
@@ -269,6 +270,7 @@
                     foot: false,
                     left: 0,
                     right: 0,
+                    class: 'smart-grid-fixed',
                     'z-index': 0
                 };
 
@@ -307,7 +309,7 @@ function ListCreator() {
   var itemsPerPage = '\n      <div class="row">\n        <div class="col-md-offset-9 col-md-2">\n          <div class="text-right" style="line-height: 30px">\n            <span gumga-translate-tag="gumgalist.itemsperpage"></span>\n          </div>\n        </div>\n        <div class="col-md-1">\n          <select class="form-control input-sm" ng-options="item for item in ctrl.config.itemsPerPage" ng-model="ctrl.selectedItemPerPage">\n          </select>\n        </div>\n      </div>';
 
   function formatTableHeader(sortField, title) {
-    var templateWithSort = '\n        <a ng-click="ctrl.doSort(\'' + sortField + '\')" class="th-sort">\n          ' + title + '\n          <span ng-show="ctrl.activeSorted.column  == \'' + sortField + '\'" ng-class="ctrl.activeSorted.direction == \'asc\' ? \'dropup\' : \' \' ">\n            <span class="caret"></span>\n          </span>\n        </a>';
+    var templateWithSort = '\n        <a ng-click="ctrl.doSort(\'' + sortField + '\')" class="th-sort">\n          ' + title + '\n          <span style="{{ctrl.activeSorted.column  == \'' + sortField + '\' ? \'\': \'opacity: 0.4;\'}}" ng-class="ctrl.activeSorted.direction == \'asc\' ? \'dropup\' : \' \' ">\n            <span class="caret"></span>\n          </span>\n        </a>';
     return !!sortField ? templateWithSort : title;
   }
 
@@ -330,21 +332,24 @@ function ListCreator() {
 
   function generateBody(columnsArray) {
     return columnsArray.reduce(function (prev, next) {
+      if (next.name == "$checkbox") {
+        return prev += '\n            <td class="' + next.size + ' td-checkbox" ng-style="{\'border-left\': {{ ctrl.conditionalTableCell($value,\'' + next.name + '\') }} }"> ' + next.content + '</td>';
+      }
       return prev += '\n          <td class="' + next.size + '" ng-style="{\'border-left\': {{ ctrl.conditionalTableCell($value,\'' + next.name + '\') }} }"> ' + next.content + '</td>';
     }, ' ');
   }
 
-  function mountTable(config, className) {
+  function mountTable(config, className, style) {
     if (config.checkbox) {
       config.columnsConfig.unshift({
-        title: '<input type="checkbox" ng-model="ctrl.checkAll" ng-change="ctrl.selectAll(ctrl.checkAll)" ng-if="\'' + config.selection + '\' === \'multi\'"/>',
+        title: '<div class="pure-checkbox">\n                  <input type="checkbox"\n                         ng-model="ctrl.checkAll"\n                         ng-change="ctrl.selectAll(ctrl.checkAll)"\n                         ng-show="\'' + config.selection + '\' === \'multi\'"/>\n                         <label ng-click="ctrl.checkAll = !ctrl.checkAll; ctrl.selectAll(ctrl.checkAll)"></label>\n                </div>',
         name: '$checkbox',
-        content: '<input name="$checkbox" type="checkbox" ng-model="ctrl.selectedMap[$index].checkbox"/>',
+        content: '<div class="pure-checkbox">\n                    <input  name="$checkbox"\n                            type="checkbox"\n                            ng-model="ctrl.selectedMap[$index].checkbox"/>\n                            <label></label>\n                  </div>',
         size: 'col-md-1',
         conditional: angular.noop
       });
     }
-    return '\n        ' + (config.itemsPerPage.length > 0 ? itemsPerPage : ' ') + '\n        <div class="table-responsive">\n          <table class="' + className + '">\n            <thead>\n              <tr>\n                ' + generateHeader(config) + '\n              </tr>\n            </thead>\n            <tbody>\n            <tr ng-style="{ \'border-left\': {{ ctrl.conditional($value) }} }" ng-dblclick="ctrl.doubleClick($value)" ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                ng-repeat="$value in ctrl.data track by $index" ng-click="ctrl.select($index,$event)">\n                ' + generateBody(config.columnsConfig) + '\n              </tr>\n            </tbody>\n          </table>\n        </div>';
+    return '\n        ' + (config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' ') + '\n        <style ng-if="ctrl.listConfig.materialTheme">' + style + '</style>\n        <div class="{{ctrl.listConfig.materialTheme ? \'gmd panel\': \'\'}}">\n          <div class="{{ctrl.listConfig.materialTheme ? \'panel-body\': \'\'}}">\n            <div class="table-responsive">\n              <table class="' + className + '">\n                <thead>\n                  <tr>\n                    ' + generateHeader(config) + '\n                  </tr>\n                </thead>\n                <tbody>\n                <tr ng-style="{ \'border-left\': {{ ctrl.conditional($value) }} }"\n                    ng-dblclick="ctrl.doubleClick($value)"\n                    ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                    ng-repeat="$value in ctrl.data track by $index" ng-click="ctrl.select($index,$event)">\n                    ' + generateBody(config.columnsConfig) + '\n                  </tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n          <div ng-show="ctrl.listConfig.materialTheme" class="{{ctrl.listConfig.materialTheme ? \'panel-footer\': \'\'}}">\n\n            <div class="page-select">\n              <div class="btn-group smart-footer-item">\n                <button type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown"\n                        aria-haspopup="true"\n                        aria-expanded="false">\n                  P\xE1gina: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>\n                </button>\n                <ul class="gmd dropdown-menu">\n                  <li class="effect-ripple {{page == ctrl.pageModel ? \'selected\' : \'\'}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">\n                    {{page}}\n                  </li>\n                </ul>\n              </div>\n            </div>\n\n            <div class="page-select ">\n              <div class="smart-footer-item">\n                {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{(ctrl.pageModel) * ctrl.pageSize}} de {{ctrl.count}}\n                <button class="btn" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>\n                <button class="btn" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>\n              </div>\n            </div>\n\n          </div>\n        </div>\n        ';
   }
 
   return { mountTable: mountTable };
@@ -353,7 +358,21 @@ function ListCreator() {
 angular.module('gumga.list.creator', []).factory('listCreator', ListCreator);
 
 },{}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = "\n\ngumga-list .table{\n  margin: 0;\n}\n\ngumga-list tr{\n  transition: background-color .2s;\n  height: 48px !important;\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n}\n\ngumga-list tr th a:hover{\n  color: #525252;\n  text-decoration: none;\n  cursor: pointer;\n}\n\ngumga-list .table>thead>tr>th{\n  border: none !important;\n  vertical-align: initial !important;\n}\n\n/**\n  START PERSONALIZE ROWS\n**/\n\ngumga-list tbody tr:hover{\n  background: #f5f5f5 !important;\n}\n\ngumga-list .active-list .smart-grid-fixed {\n  background: #f5f5f5 !important;\n}\n\n/**\n  END PERSONALIZE ROWS\n**/\n\n.effect-ripple {\n  position: relative;\n  overflow: hidden;\n  transform: translate3d(0, 0, 0);\n}\n.effect-ripple:after {\n  content: \"\";\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);\n  background-repeat: no-repeat;\n  background-position: 50%;\n  transform: scale(10, 10);\n  opacity: 0;\n  transition: transform .5s, opacity 1s;\n}\n.effect-ripple:active:after {\n  transform: scale(0, 0);\n  opacity: .2;\n  transition: 0s;\n}\n\ngumga-list .panel .panel-body{\n  margin: 0 !important;\n}\n\ngumga-list .smart-footer-item button{\n  border: none !important;\n  outline: none !important;\n  background: #fff;\n  color: #636262;\n}\n\ngumga-list .smart-footer-item > button:hover, gumga-list .smart-footer-item > button:active{\n  background: #fff;\n  outline: none !important;\n  color: #000000;\n}\n\ngumga-list .btn-default.active.focus, .btn-default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover{\n  box-shadow: none;\n  background: #fff;\n}\n\ngumga-list .smart-footer-item ul{\n  margin-top: -32px;\n  min-width: 136px;\n  min-height: 48px;\n  max-height: 256px;\n  overflow-y: auto;\n  padding: 0;\n  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12)!important;\n  transition: all .4s cubic-bezier(.25,.8,.25,1)!important;\n  border-radius: 2px!important;\n  border: none!important;\n}\n\ngumga-list .smart-footer-item ul li{\n  cursor: pointer;\n  padding: 16px 16px;\n  font-size: 12px;\n  color: rgba(0,0,0,0.87);\n  background: #F5F5F5;\n  align-items: center;\n  height: 48px;\n}\n\ngumga-list .smart-footer-item ul li.selected{\n  color: rgb(33,150,243);\n}\n\ngumga-list .panel .panel-footer{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  -webkit-justify-content: flex-end;\n  -ms-flex-pack: end;\n  justify-content: flex-end;\n  -webkit-flex-wrap: wrap-reverse;\n  -ms-flex-wrap: wrap-reverse;\n  flex-wrap: wrap-reverse;\n  box-sizing: border-box;\n  padding: 0px 24px;\n  font-size: 12px;\n  color: rgba(0,0,0,.54);\n  border-top: 1px rgba(0,0,0,.12) solid !important;\n}\n\ngumga-list .panel .panel-footer .page-select{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  height: 56px;\n}\n\ngumga-list td[class*=\"td-checkbox\"], gumga-list th, gumga-list td[class*=\"ng-binding\"]{\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n  padding: 17px 0px 0px 24px !important;\n  color: rgba(0,0,0,.87) !important;\n  font-size: 13px !important;\n  border-top: 1px rgba(0,0,0,.12) solid !important;\n}\n\ngumga-list tr td < span:nth-child(n+10) {\n    background-color:red !important;\n}\n\ngumga-list .table-responsive{\n  border: none;\n}\n\ngumga-list .smart-grid-fixed{\n  /*border-: #f5f5f5 !important;*/\n}\n\n\n\n\n.pure-checkbox input[type=\"checkbox\"], .pure-radiobutton input[type=\"checkbox\"], .pure-checkbox input[type=\"radio\"], .pure-radiobutton input[type=\"radio\"] {\n  border: 0;\n  clip: rect(0 0 0 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.pure-checkbox input[type=\"checkbox\"]:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:focus + label:before, .pure-checkbox input[type=\"radio\"]:focus + label:before, .pure-radiobutton input[type=\"radio\"]:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:hover + label:before, .pure-checkbox input[type=\"radio\"]:hover + label:before, .pure-radiobutton input[type=\"radio\"]:hover + label:before {\n  border-color: #4f8196;\n  background-color: #f2f2f2;\n}\n\n.pure-checkbox input[type=\"checkbox\"]:active + label:before, .pure-radiobutton input[type=\"checkbox\"]:active + label:before, .pure-checkbox input[type=\"radio\"]:active + label:before, .pure-radiobutton input[type=\"radio\"]:active + label:before { transition-duration: 0s; }\n\n.pure-checkbox input[type=\"checkbox\"] + label, .pure-radiobutton input[type=\"checkbox\"] + label, .pure-checkbox input[type=\"radio\"] + label, .pure-radiobutton input[type=\"radio\"] + label {\n  position: relative;\n  padding-left: 2em;\n  vertical-align: middle;\n  user-select: none;\n  cursor: pointer;\n}\n\n.pure-checkbox input[type=\"checkbox\"] + label:before, .pure-radiobutton input[type=\"checkbox\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before {\n  box-sizing: content-box;\n  content: '';\n  color: #4f8196;\n  position: absolute;\n  top: 50%;\n  left: 0;\n  width: 14px;\n  height: 14px;\n  margin-top: -9px;\n  border: 2px solid #4f8196;\n  text-align: center;\n  transition: all 0.4s ease;\n}\n\n.pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after {\n  box-sizing: content-box;\n  content: '';\n  background-color: #4f8196;\n  position: absolute;\n  top: 50%;\n  left: 4px;\n  width: 10px;\n  height: 10px;\n  margin-top: -5px;\n  transform: scale(0);\n  transform-origin: 50%;\n  transition: transform 200ms ease-out;\n}\n\n.pure-checkbox input[type=\"checkbox\"]:disabled + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled + label:before, .pure-checkbox input[type=\"radio\"]:disabled + label:before, .pure-radiobutton input[type=\"radio\"]:disabled + label:before { border-color: #cccccc; }\n\n.pure-checkbox input[type=\"checkbox\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:focus + label:before, .pure-checkbox input[type=\"radio\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:hover + label:before, .pure-checkbox input[type=\"radio\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:hover + label:before { background-color: inherit; }\n\n.pure-checkbox input[type=\"checkbox\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:checked + label:before, .pure-checkbox input[type=\"radio\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:checked + label:before { background-color: #cccccc; }\n\n.pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after {\n  background-color: transparent;\n  top: 50%;\n  left: 4px;\n  width: 8px;\n  height: 3px;\n  margin-top: -4px;\n  border-style: solid;\n  border-color: #ffffff;\n  border-width: 0 0 3px 3px;\n  border-image: none;\n  transform: rotate(-45deg) scale(0);\n}\n\n.pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after {\n  content: '';\n  transform: rotate(-45deg) scale(1);\n  transition: transform 200ms ease-out;\n}\n\n.pure-checkbox input[type=\"radio\"]:checked + label:before, .pure-radiobutton input[type=\"radio\"]:checked + label:before {\n  animation: borderscale 300ms ease-in;\n  background-color: white;\n}\n\n.pure-checkbox input[type=\"radio\"]:checked + label:after, .pure-radiobutton input[type=\"radio\"]:checked + label:after { transform: scale(1); }\n\n.pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after { border-radius: 50%; }\n\n.pure-checkbox input[type=\"checkbox\"]:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:checked + label:before {\n  animation: borderscale 200ms ease-in;\n  background: #4f8196;\n}\n\n.pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after { transform: rotate(-45deg) scale(1); }\n\n@keyframes\nborderscale {  50% {\n box-shadow: 0 0 0 2px #4f8196;\n}\n}\n\n";
+
+},{}],4:[function(require,module,exports){
 'use strict';
+
+var _listMaterialDesign = require('./list-material-design');
+
+var _listMaterialDesign2 = _interopRequireDefault(_listMaterialDesign);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 require('./list-creator.factory.js');
 require('./grid.js');
@@ -606,7 +625,7 @@ function List($compile, listCreator) {
     // Compilação do componente na tela.
     function compileElement() {
       $element.html('');
-      var element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class));
+      var element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, _listMaterialDesign2.default));
       $element.append($compile(element)($scope));
     }
     try {
@@ -618,6 +637,33 @@ function List($compile, listCreator) {
         $timeout(function () {
           return $element.find('table').smartGrid(ctrl.listConfig.fixed);
         });
+      }
+    };
+
+    ctrl.getTotalPage = function () {
+      return Array.from(Array(ctrl.count / ctrl.pageSize).keys()).map(function (number) {
+        return number + 1;
+      });
+    };
+
+    ctrl.changePage = function (page) {
+      if (ctrl.onPageChange) {
+        ctrl.onPageChange({ page: page });
+        ctrl.pageModel = page;
+      }
+    };
+
+    ctrl.previousPage = function () {
+      if (ctrl.onPageChange && ctrl.pageModel - 1 > 0) {
+        ctrl.onPageChange({ page: ctrl.pageModel - 1 });
+        ctrl.pageModel = ctrl.pageModel - 1;
+      }
+    };
+
+    ctrl.nextPage = function () {
+      if (ctrl.onPageChange && ctrl.pageModel + 1 <= ctrl.count / ctrl.pageSize) {
+        ctrl.onPageChange({ page: ctrl.pageModel + 1 });
+        ctrl.pageModel = ctrl.pageModel + 1;
       }
     };
   }
@@ -632,7 +678,11 @@ function List($compile, listCreator) {
       'onDoubleClick': '&?',
       'onSort': '&?',
       'config': '=configuration',
-      'changePerPage': '&?'
+      'changePerPage': '&?',
+      'pageSize': '=?',
+      'count': '=?',
+      'pageModel': '=?',
+      'onPageChange': '&?'
     },
     bindToController: true,
     controllerAs: 'ctrl',
@@ -642,4 +692,4 @@ function List($compile, listCreator) {
 
 angular.module('gumga.list', ['gumga.list.creator']).directive('gumgaList', List);
 
-},{"./grid.js":1,"./list-creator.factory.js":2}]},{},[3]);
+},{"./grid.js":1,"./list-creator.factory.js":2,"./list-material-design":3}]},{},[4]);

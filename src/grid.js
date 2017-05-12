@@ -49,6 +49,7 @@
                     foot: false,
                     left: 0,
                     right: 0,
+                    class: 'smart-grid-fixed',
                     'z-index': 0
                 };
 
@@ -127,8 +128,7 @@
                 function setParent() {
                     var parent = angular.element(settings.parent);
                     var table  = angular.element(settings.table);
-
-                    parent.append(table);
+                    // parent.append(table);
                     parent
                         .css({
                             'overflow-x': 'auto',
@@ -144,17 +144,24 @@
                         var left         = parent.scrollLeft();
 
                         if (settings.head)
-                            this.find("thead tr > *").css("top", top);
+                            parent.find("thead tr > *").css("top", top);
 
                         if (settings.foot)
-                            this.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
+                            parent.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
 
-                        if (settings.left > 0)
-                            settings.leftColumns.css("left", left);
+                        if (settings.left > 0){
+                          settings.leftColumns.css("left", left);
+                          if(settings.class)
+                            settings.leftColumns.addClass(settings.class);
+                        }
 
-                        if (settings.right > 0)
-                            settings.rightColumns.css("right", scrollWidth - clientWidth - left);
-                    }.bind(table));
+                        if (settings.right > 0){
+                          settings.rightColumns.css("right", scrollWidth - clientWidth - left);
+                          if(settings.class)
+                            settings.rightColumns.addClass(settings.class);
+                        }
+
+                    });
                 }
 
                 // Set table head fixed
@@ -162,7 +169,6 @@
                     var thead = angular.element(settings.table).find("thead");
                     var tr    = thead.find("tr");
                     var cells = thead.find("tr > *");
-
                     setBackground(cells);
                     cells.css({
                         'position': 'relative'
@@ -185,19 +191,17 @@
                 function fixLeft() {
                     var table = angular.element(settings.table);
                     settings.leftColumns = angular.element();
-                    var tr = table.find("tr");
+                    var tr = table.find("tr"), count = 0;
                     tr.each(function (k, row) {
-
                         solverLeftColspan(row, function (cell) {
-                            settings.leftColumns = settings.leftColumns.add(cell);
+                            if(settings.top == undefined || (count < (settings.top*settings.left)))
+                              settings.leftColumns = settings.leftColumns.add(cell);
+                            if(cell[0] && cell[0].nodeName == 'TD') count++;
                         });
                     });
-
                     var column = settings.leftColumns;
-
                     column.each(function (k, cell) {
                         var cell = angular.element(cell);
-
                         setBackground(cell);
                         cell.css({
                             'position': 'relative'
@@ -247,7 +251,6 @@
 
                         var background = parentBackground ? parentBackground : "white";
                         background     = elementBackground ? elementBackground : background;
-
                         element.css("background-color", background);
                     });
                 }

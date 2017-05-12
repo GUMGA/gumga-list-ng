@@ -18,7 +18,7 @@ function ListCreator() {
     let templateWithSort = `
         <a ng-click="ctrl.doSort('${sortField}')" class="th-sort">
           ${title}
-          <span ng-show="ctrl.activeSorted.column  == '${sortField}'" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
+          <span style="{{ctrl.activeSorted.column  == '${sortField}' ? '': 'opacity: 0.4;'}}" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
             <span class="caret"></span>
           </span>
         </a>`;
@@ -46,38 +46,89 @@ function ListCreator() {
 
   function generateBody(columnsArray) {
     return columnsArray.reduce((prev, next) => {
+      if(next.name == "$checkbox"){
+        return prev += `
+            <td class="${next.size} td-checkbox" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
+      }
       return prev += `
           <td class="${next.size}" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
     }, ' ')
   }
 
-  function mountTable(config, className) {
+  function mountTable(config, className, style) {
     if (config.checkbox) {
       config.columnsConfig.unshift({
-        title: `<input type="checkbox" ng-model="ctrl.checkAll" ng-change="ctrl.selectAll(ctrl.checkAll)" ng-if="'${config.selection}' === 'multi'"/>`,
+        title: `<div class="pure-checkbox">
+                  <input type="checkbox"
+                         ng-model="ctrl.checkAll"
+                         ng-change="ctrl.selectAll(ctrl.checkAll)"
+                         ng-show="'${config.selection}' === 'multi'"/>
+                         <label ng-click="ctrl.checkAll = !ctrl.checkAll; ctrl.selectAll(ctrl.checkAll)"></label>
+                </div>`,
         name: '$checkbox',
-        content: '<input name="$checkbox" type="checkbox" ng-model="ctrl.selectedMap[$index].checkbox"/>',
+        content: `<div class="pure-checkbox">
+                    <input  name="$checkbox"
+                            type="checkbox"
+                            ng-model="ctrl.selectedMap[$index].checkbox"/>
+                            <label></label>
+                  </div>`,
         size: 'col-md-1',
         conditional: angular.noop
       })
     }
     return `
-        ${config.itemsPerPage.length > 0 ? itemsPerPage : ' '}
-        <div class="table-responsive">
-          <table class="${className}">
-            <thead>
-              <tr>
-                ${generateHeader(config)}
-              </tr>
-            </thead>
-            <tbody>
-            <tr ng-style="{ 'border-left': {{ ctrl.conditional($value) }} }" ng-dblclick="ctrl.doubleClick($value)" ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
-                ng-repeat="$value in ctrl.data track by $index" ng-click="ctrl.select($index,$event)">
-                ${generateBody(config.columnsConfig)}
-              </tr>
-            </tbody>
-          </table>
-        </div>`;
+        ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
+        <style ng-if="ctrl.listConfig.materialTheme">${style}</style>
+        <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
+          <div class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}">
+            <div class="table-responsive">
+              <table class="${className}">
+                <thead>
+                  <tr>
+                    ${generateHeader(config)}
+                  </tr>
+                </thead>
+                <tbody>
+                <tr ng-style="{ 'border-left': {{ ctrl.conditional($value) }} }"
+                    ng-dblclick="ctrl.doubleClick($value)"
+                    ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
+                    ng-repeat="$value in ctrl.data track by $index" ng-click="ctrl.select($index,$event)">
+                    ${generateBody(config.columnsConfig)}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div ng-show="ctrl.listConfig.materialTheme" class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}">
+
+            <div class="page-select">
+              <div class="btn-group smart-footer-item">
+                <button type="button"
+                        class="btn btn-default dropdown-toggle"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                  Página: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>
+                </button>
+                <ul class="gmd dropdown-menu">
+                  <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">
+                    {{page}}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="page-select ">
+              <div class="smart-footer-item">
+                {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{(ctrl.pageModel) * ctrl.pageSize}} de {{ctrl.count}}
+                <button class="btn" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
+                <button class="btn" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        `;
   }
 
 

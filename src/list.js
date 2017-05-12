@@ -1,6 +1,8 @@
 require('./list-creator.factory.js')
 require('./grid.js')
 
+import style from './list-material-design';
+
 List.$inject = ['$compile', 'listCreator']
 
 function List($compile, listCreator){
@@ -212,7 +214,7 @@ function List($compile, listCreator){
       // Compilação do componente na tela.
       function compileElement() {
         $element.html('')
-        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class))
+        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style))
         $element.append($compile(element)($scope))
       }
       try {
@@ -223,6 +225,31 @@ function List($compile, listCreator){
         if(ctrl.listConfig.fixed){
           $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
+      }
+
+      ctrl.getTotalPage = () => {
+        return Array.from(Array((ctrl.count/ctrl.pageSize)).keys()).map(number=>number+1);
+      }
+
+      ctrl.changePage = (page) => {
+          if(ctrl.onPageChange){
+            ctrl.onPageChange({page: page});
+            ctrl.pageModel = page;
+          }
+      }
+
+      ctrl.previousPage = () => {
+          if(ctrl.onPageChange && (ctrl.pageModel-1) > 0){
+            ctrl.onPageChange({page: ctrl.pageModel-1});
+            ctrl.pageModel = ctrl.pageModel-1;
+          }
+      }
+
+      ctrl.nextPage = () => {
+          if(ctrl.onPageChange && ((ctrl.pageModel+1) <= (ctrl.count/ctrl.pageSize))){
+            ctrl.onPageChange({page: ctrl.pageModel+1});
+            ctrl.pageModel = ctrl.pageModel+1;
+          }
       }
 
     }
@@ -237,7 +264,11 @@ function List($compile, listCreator){
         'onDoubleClick': '&?',
         'onSort': '&?',
         'config': '=configuration',
-        'changePerPage': '&?'
+        'changePerPage': '&?',
+        'pageSize': '=?',
+        'count': '=?',
+        'pageModel': '=?',
+        'onPageChange': '&?'
       },
       bindToController: true,
       controllerAs: 'ctrl',
