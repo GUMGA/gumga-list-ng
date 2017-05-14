@@ -24,8 +24,17 @@ gumga-list .table>thead>tr>th{
 /**
   START PERSONALIZE ROWS
 **/
+gumga-list .table>tbody>tr:hover .smart-grid-fixed{
+  -webkit-transition: background-color 10ms linear;
+  -ms-transition: background-color 10ms linear;
+  transition: background-color 10ms linear;
+  background: #f5f5f5 !important;
+}
 
-gumga-list tbody tr:hover{
+gumga-list .table>tbody>tr:hover {
+  -webkit-transition: background-color 10ms linear;
+  -ms-transition: background-color 10ms linear;
+  transition: background-color 10ms linear;
   background: #f5f5f5 !important;
 }
 

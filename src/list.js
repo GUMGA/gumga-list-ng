@@ -228,7 +228,11 @@ function List($compile, listCreator){
       }
 
       ctrl.getTotalPage = () => {
-        return Array.from(Array((ctrl.count/ctrl.pageSize)).keys()).map(number=>number+1);
+        var res = [];
+        for (var i = 1; i < (ctrl.count/ctrl.pageSize); i++) {
+          res.push(i);
+        }
+        return res;
       }
 
       ctrl.changePage = (page) => {
