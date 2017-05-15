@@ -42,6 +42,9 @@ function List($compile, listCreator){
 
       // Garantindo que existam todos os atributos que podem ser passados via elemento.
       ctrl.data           = ctrl.data   || []
+      ctrl.pageModel           = ctrl.pageModel   || 1;
+      ctrl.pageAlign           = ctrl.pageAlign   || "flex-end"; // flex-end, flex-start center
+      ctrl.pagePosition           = ctrl.pagePosition ? ctrl.pagePosition : "BOTTOM"; // top , bottom, all
       ctrl.listConfig         = ctrl.listConfig || {}
       ctrl.sort           = hasAttr('sort')           ? ctrl.sort                                   : angular.noop
       ctrl.class          = hasAttr('class')          ? defaultCssClass.concat($attrs.class || ' ') : defaultCssClass
@@ -235,29 +238,34 @@ function List($compile, listCreator){
         return res;
       }
 
-      ctrl.changePage = (page) => {
+      ctrl.changePage = (page, itensPerPage) => {
           if(ctrl.onPageChange){
-            ctrl.onPageChange({page: page});
-            ctrl.pageModel = page;
+            ctrl.pageSize = itensPerPage || ctrl.pageSize;
+            ctrl.pageModel = page || ctrl.pageModel;
+            ctrl.onPageChange({page: page, pageSize: ctrl.pageSize});
           }
       }
 
       ctrl.previousPage = () => {
-          if(ctrl.onPageChange && (ctrl.pageModel-1) > 0){
-            ctrl.onPageChange({page: ctrl.pageModel-1});
+          if(ctrl.onPageChange && ctrl.existsPreviousPage()){
+            ctrl.onPageChange({page: ctrl.pageModel-1, pageSize: ctrl.pageSize});
             ctrl.pageModel = ctrl.pageModel-1;
           }
       }
 
       ctrl.roundNumber = (count, pageSize, pageModel) => {
-        let num = Math.floor(count / pageSize) * pageModel;
-        if(Math.floor(num) >= count) return count;
-        return Math.floor(num);
+        let round = pageSize * pageModel;
+        if(Math.floor(round) >= count) return count;
+        return round;
       }
 
+      ctrl.existsPreviousPage = () => (ctrl.pageModel-1) > 0;
+
+      ctrl.existsNextPage = () => ((ctrl.pageModel+1) <= Math.ceil(ctrl.count/ctrl.pageSize));
+
       ctrl.nextPage = () => {
-          if(ctrl.onPageChange && ((ctrl.pageModel) <= Math.round(ctrl.count/ctrl.pageSize))){
-            ctrl.onPageChange({page: ctrl.pageModel+1});
+          if(ctrl.onPageChange && ctrl.existsNextPage()){
+            ctrl.onPageChange({page: ctrl.pageModel+1, pageSize: ctrl.pageSize});
             ctrl.pageModel = ctrl.pageModel+1;
           }
       }
@@ -265,8 +273,8 @@ function List($compile, listCreator){
       ctrl.inputPageChange = (evt) => {
         if(evt.keyCode == 13){
           if(ctrl.onPageChange && (Number(evt.target.value) <= Math.ceil(ctrl.count/ctrl.pageSize))){
-            ctrl.onPageChange({page: evt.target.value});
-            ctrl.pageModel = evt.target.value;
+            ctrl.onPageChange({page: evt.target.value, pageSize: ctrl.pageSize});
+            ctrl.pageModel = Number(evt.target.value);
           }
         }
       }
@@ -284,6 +292,9 @@ function List($compile, listCreator){
         'onSort': '&?',
         'config': '=configuration',
         'changePerPage': '&?',
+        'maxHeight': '@?',
+        'pagePosition': '@?',
+        'pageAlign': '@?',
         'pageSize': '=?',
         'count': '=?',
         'pageModel': '=?',

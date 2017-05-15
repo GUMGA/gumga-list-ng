@@ -16,6 +16,13 @@ gumga-list tr th a:hover{
   cursor: pointer;
 }
 
+gumga-list .panel-footer, gumga-list .panel-heading{
+  padding: 10px;
+  text-align: right;
+  background-color: #fff;
+  border-top: 0;
+}
+
 gumga-list .table>thead>tr>th{
   border: none !important;
   vertical-align: initial !important;
@@ -81,7 +88,10 @@ gumga-list .smart-footer-item button{
   border: none !important;
   outline: none !important;
   background: #fff;
-  color: #636262;
+  color: rgba(0,0,0,.54);
+  font-size: 13px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 gumga-list .smart-footer-item > button:hover, gumga-list .smart-footer-item > button:active{
@@ -97,7 +107,7 @@ gumga-list .btn-default.active.focus, .btn-default.active:focus, .btn-default.ac
 
 gumga-list .smart-footer-item ul{
   margin-top: -32px;
-  min-width: 136px;
+  width: 136px !important;
   min-height: 48px;
   max-height: 256px;
   overflow-y: auto;
@@ -106,6 +116,25 @@ gumga-list .smart-footer-item ul{
   transition: all .4s cubic-bezier(.25,.8,.25,1)!important;
   border-radius: 2px!important;
   border: none!important;
+}
+
+gumga-list .smart-footer-item{
+  font-size: 13px;
+}
+
+gumga-list  .dropdown-menu {
+    -webkit-transition: all .5s ease-out;
+    transition: all .5s ease-out;
+    transform: rotateX(90deg);
+    transform-origin: top;
+    opacity: 0;
+    display: block;
+}
+
+gumga-list  .open .dropdown-menu {
+    opacity: 1;
+    transform: rotateX(0deg);
+    transform-origin: top;
 }
 
 gumga-list .smart-footer-item ul li{
@@ -127,13 +156,14 @@ gumga-list .smart-footer-item ul li.search input{
   border: none;
   border-radius: 0;
   box-shadow: none;
+  background: #fff;
 }
 
 gumga-list .smart-footer-item ul li.selected{
   color: rgb(33,150,243);
 }
 
-gumga-list .panel .panel-footer{
+gumga-list .panel .panel-footer, gumga-list .panel .panel-heading{
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -153,7 +183,7 @@ gumga-list .panel .panel-footer{
   border-top: 1px rgba(0,0,0,.12) solid !important;
 }
 
-gumga-list .panel .panel-footer .page-select{
+gumga-list .panel .panel-footer .page-select, gumga-list .panel .panel-heading .page-select{
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;

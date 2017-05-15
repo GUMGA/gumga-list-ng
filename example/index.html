@@ -43,9 +43,10 @@
                       data="pessoa.data"
                       configuration="tableConfig"
                       page-size="pessoa.pageSize"
+                      page-position="bottom"
                       count="pessoa.count"
                       page-model="page"
-                      on-page-change="pessoa.methods.get(page)"></gumga-list>
+                      on-page-change="pessoa.methods.get(page, pageSize)"></gumga-list>
         </div>
       </div>
     </form>
@@ -54,22 +55,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="../node_modules/angular/angular.min.js"></script>
-  <script src="../node_modules/gumga-rest-ng/dist/gumga-rest.js"></script>
-  <script src="../node_modules/gumga-controller-ng/dist/gumga-controller.js"></script>
+  <script src="../node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
+  <script src="../node_modules/gumga-controller-ng/dist/gumga-controller.min.js"></script>
   <script src="../dist/gumga-list.js"></script>
 
   <script>
     angular.module('yourApp', ['gumga.rest','gumga.controller','gumga.list'])
       .config(function ($httpProvider) {
         $httpProvider.defaults.headers.common['gumgaToken'] = 'eterno'
+        // $httpProvider.defaults.headers.common['gumgaToken'] = 'batistakids'
       })
       .controller('manyToOneCtrl', ['GumgaRest','gumgaController','$scope', '$http',
         function (GumgaRest,gumgaController,$scope, $http) {
           var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
+          // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/historico');
 
           gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-          $scope.page = 2;
+          $scope.page = 1;
 
           $scope.pessoa.methods.get($scope.page);
 
@@ -89,14 +92,16 @@
           //fixRight : {"head" : false, "right" : 1}
           //fixMultiFooter : {'foot' : true, 'head' : false}
           //fixMultiLeft : {"head" : false, "left" : 2}
-          //fixMultiRight : {"head" : false, "right" : 2}
-
+          //fixMultiRight : {"head" : false, "right" : 2}5
           $scope.tableConfig = {
             columns: 'id, name, login, view',
-            // itemsPerPage: [1, 2, 30],
+            itemsPerPage: [5, 10],
             checkbox: true,
-              materialTheme: true,
-            fixed: {"left" : 2},
+            materialTheme: true,
+            fixed: {
+              "head" : true
+              // "left" : 2
+            },
             selection: "multi",
             columnsConfig: [
               {

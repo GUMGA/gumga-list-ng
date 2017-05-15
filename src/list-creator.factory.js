@@ -14,6 +14,54 @@ function ListCreator() {
         </div>
       </div>`;
 
+  const paginationTemplate = `
+        <div class="page-select">
+          <div class="btn-group smart-footer-item">
+            <button type="button"
+                    class="btn btn-default dropdown-toggle"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+              Página: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>
+            </button>
+            <ul class="gmd dropdown-menu">
+              <li class="search">
+                <input type="number" min="1" step="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" autofocus max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="Página" class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>
+              </li>
+              <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">
+                {{page}}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="page-select" ng-show="ctrl.config.itemsPerPage.length > 0">
+          <div class="btn-group smart-footer-item">
+            <button type="button"
+                    class="btn btn-default dropdown-toggle"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+              Itens por página: &nbsp; {{ctrl.pageSize}} &nbsp; <span class="caret"></span>
+            </button>
+            <ul class="gmd dropdown-menu">
+              <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? 'selected' : ''}}"
+                  ng-click="ctrl.changePage(page, itemPerPage)" ng-repeat="itemPerPage in ctrl.config.itemsPerPage">
+                {{itemPerPage}}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="page-select">
+          <div class="smart-footer-item">
+            {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}
+            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
+            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
+          </div>
+        </div>
+  `;
+
   function formatTableHeader(sortField, title) {
     let templateWithSort = `
         <a ng-click="ctrl.doSort('${sortField}')" class="th-sort">
@@ -36,7 +84,7 @@ function ListCreator() {
   function generateHeaderColumns(columnsArray = [], hasCheckbox = true) {
     return columnsArray.reduce((prev, next) => {
       return prev += `
-          <th style="${next.style || ' '}" class="${next.size || ' '}">
+          <th style="${next.style || ' '} white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
             <strong>
               ${formatTableHeader(next.sortField, next.title)}
             </strong>
@@ -82,8 +130,13 @@ function ListCreator() {
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
         <style ng-if="ctrl.listConfig.materialTheme">${style}</style>
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
-          <div class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}">
-            <div class="table-responsive">
+          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'TOP' || ctrl.pagePosition.toUpperCase() == 'ALL')"
+               class="{{ctrl.listConfig.materialTheme ? 'panel-heading': ''}}"
+               style="justify-content: {{ctrl.pageAlign}};">
+              ${paginationTemplate}
+          </div>
+          <div class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}" style="padding: 0;">
+            <div class="table-responsive" style="{{ctrl.maxHeight ? 'max-height: '+ctrl.maxHeight : ''}}">
               <table class="${className}">
                 <thead>
                   <tr>
@@ -101,35 +154,10 @@ function ListCreator() {
               </table>
             </div>
           </div>
-          <div ng-show="ctrl.listConfig.materialTheme" class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}">
-            <div class="page-select">
-              <div class="btn-group smart-footer-item">
-                <button type="button"
-                        class="btn btn-default dropdown-toggle"
-                        data-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false">
-                  Página: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>
-                </button>
-                <ul class="gmd dropdown-menu">
-                  <li class="search">
-                    <input type="number" min="1" max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="Página .." class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>
-                  </li>
-                  <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">
-                    {{page}}
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="page-select ">
-              <div class="smart-footer-item">
-                {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}
-                <button class="btn" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
-                <button class="btn" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
-              </div>
-            </div>
-
+          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL')"
+               class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}"
+               style="justify-content: {{ctrl.pageAlign}};">
+              ${paginationTemplate}
           </div>
         </div>
         `;
