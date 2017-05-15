@@ -55,6 +55,8 @@ function ListCreator() {
     }, ' ')
   }
 
+
+
   function mountTable(config, className, style) {
     if (config.checkbox) {
       config.columnsConfig.unshift({
@@ -100,7 +102,6 @@ function ListCreator() {
             </div>
           </div>
           <div ng-show="ctrl.listConfig.materialTheme" class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}">
-
             <div class="page-select">
               <div class="btn-group smart-footer-item">
                 <button type="button"
@@ -111,6 +112,9 @@ function ListCreator() {
                   Página: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>
                 </button>
                 <ul class="gmd dropdown-menu">
+                  <li class="search">
+                    <input type="number" min="1" max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="Página .." class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>
+                  </li>
                   <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">
                     {{page}}
                   </li>
@@ -120,7 +124,7 @@ function ListCreator() {
 
             <div class="page-select ">
               <div class="smart-footer-item">
-                {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{(ctrl.pageModel) * ctrl.pageSize}} de {{ctrl.count}}
+                {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}
                 <button class="btn" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
                 <button class="btn" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
               </div>

@@ -69,9 +69,9 @@
 
           gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-          $scope.page = 1;
+          $scope.page = 2;
 
-          $scope.pessoa.methods.get();
+          $scope.pessoa.methods.get($scope.page);
 
           $scope.changeColumns = function (teste) {
             $scope.tableConfig.columns = teste
@@ -95,7 +95,7 @@
             columns: 'id, name, login, view',
             // itemsPerPage: [1, 2, 30],
             checkbox: true,
-            materialTheme: true,
+              materialTheme: true,
             fixed: {"left" : 2},
             selection: "multi",
             columnsConfig: [

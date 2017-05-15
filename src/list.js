@@ -229,7 +229,7 @@ function List($compile, listCreator){
 
       ctrl.getTotalPage = () => {
         var res = [];
-        for (var i = 1; i < (ctrl.count/ctrl.pageSize); i++) {
+        for (var i = 1; i <= Math.ceil(ctrl.count/ctrl.pageSize); i++) {
           res.push(i);
         }
         return res;
@@ -249,11 +249,26 @@ function List($compile, listCreator){
           }
       }
 
+      ctrl.roundNumber = (count, pageSize, pageModel) => {
+        let num = Math.floor(count / pageSize) * pageModel;
+        if(Math.floor(num) >= count) return count;
+        return Math.floor(num);
+      }
+
       ctrl.nextPage = () => {
-          if(ctrl.onPageChange && ((ctrl.pageModel+1) <= (ctrl.count/ctrl.pageSize))){
+          if(ctrl.onPageChange && ((ctrl.pageModel) <= Math.round(ctrl.count/ctrl.pageSize))){
             ctrl.onPageChange({page: ctrl.pageModel+1});
             ctrl.pageModel = ctrl.pageModel+1;
           }
+      }
+
+      ctrl.inputPageChange = (evt) => {
+        if(evt.keyCode == 13){
+          if(ctrl.onPageChange && (Number(evt.target.value) <= Math.ceil(ctrl.count/ctrl.pageSize))){
+            ctrl.onPageChange({page: evt.target.value});
+            ctrl.pageModel = evt.target.value;
+          }
+        }
       }
 
     }
