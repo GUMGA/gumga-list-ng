@@ -251,7 +251,8 @@
 
                         var background = parentBackground ? parentBackground : "white";
                         background     = elementBackground ? elementBackground : background;
-                        element.css("background-color", background);
+                        // element.css("background-color", background);
+                        element.css("background-color", "white");
                     });
                 }
 

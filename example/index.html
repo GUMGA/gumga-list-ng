@@ -13,8 +13,11 @@
       body{
         background: #f5f5f5;
       }
-      .smart-grid-fixed{
-        /*background: #ccc !important;*/
+      .disponivel{
+        color: red !important;
+      }
+      .nao-disponivel:hover{
+        color: red !important;
       }
     </style>
 </head>
@@ -42,11 +45,13 @@
           <gumga-list sort="pessoa.methods.sort(field, dir)"
                       data="pessoa.data"
                       configuration="tableConfig"
-                      page-size="pessoa.pageSize"
-                      page-position="bottom"
+                      page-size="pessoa.pageSize" // quantidade de registros por pagina
+                      page-position="bottom"  // posição que aparecera a paginação, default: bottom / top, bottom, all
+                      page-align="flex-end" // alinhamento da paginação, default flex-end / flex-start, center, flex-end
                       count="pessoa.count"
-                      page-model="page"
-                      on-page-change="pessoa.methods.get(page, pageSize)"></gumga-list>
+                      page-model="page" // ng model da pagina atual
+                      on-page-change="pessoa.methods.get(page, pageSize)" // evento ao mudar de pagina ou quantidade de registros por pagina
+            ></gumga-list>
         </div>
       </div>
     </form>
@@ -81,26 +86,27 @@
             $scope.tableConfig = angular.copy($scope.tableConfig)
           }
 
-          //fixFooter : {'foot' : true, 'head' : false}
-          //fixFooterAndLeft : {'left' : 1, 'foot' : true, 'head' : false}
-          //fixFooterAndLeft : {'left' : 1, 'foot' : true, 'head' : false}
-          //fixFooterAndRight : {'right' : 1, 'foot' : true, 'head' : false}
-          //fixHeadAndLeft : {"left" : 1}
-          //fixHeadAndRight : {"right" : 1}
-          //fixHeadAndRight : {"right" : 1}
-          //fixLeft : {"head" : false, "left" : 1}
-          //fixRight : {"head" : false, "right" : 1}
-          //fixMultiFooter : {'foot' : true, 'head' : false}
-          //fixMultiLeft : {"head" : false, "left" : 2}
-          //fixMultiRight : {"head" : false, "right" : 2}5
           $scope.tableConfig = {
-            columns: 'id, name, login, view',
+            columns: 'id, name, login',
             itemsPerPage: [5, 10],
             checkbox: true,
             materialTheme: true,
+            title: 'Listagem de usuários',
+            actions: [
+              {
+                icon: '<i class="glyphicon glyphicon-trash"></i>',
+                label: 'Remover',
+                classOnSelectedValues: 'disponivel',
+                classOnNotSelectedValues: 'nao-disponivel',
+                onClick: function(selected, values){
+                  console.log(selected);
+                  console.log(values);
+                }
+              }
+            ],
             fixed: {
-              "head" : true
-              // "left" : 2
+              "head" : true,
+              "left" : 2
             },
             selection: "multi",
             columnsConfig: [

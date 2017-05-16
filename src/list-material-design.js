@@ -23,6 +23,30 @@ gumga-list .panel-footer, gumga-list .panel-heading{
   border-top: 0;
 }
 
+gumga-list .panel-actions{
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  flex-wrap: wrap-reverse;
+  box-sizing: border-box;
+  font-size: 12px;
+  color: rgba(0,0,0,.54);
+  border-top: 1px rgba(0,0,0,.12) solid !important;
+  background-color: #fff;
+  padding: 10px 24px;
+  display: flex;
+}
+
+gumga-list .panel-actions .actions{
+  margin-left: auto;
+  padding-top: 10px;
+}
+
+gumga-list .panel-actions .actions i {
+  font-size: 20px;
+  cursor: pointer;
+}
+
 gumga-list .table>thead>tr>th{
   border: none !important;
   vertical-align: initial !important;
@@ -84,6 +108,10 @@ gumga-list .panel .panel-body{
   margin: 0 !important;
 }
 
+gumga-list .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active{
+  background: #f5f5f5 !important;
+}
+
 gumga-list .smart-footer-item button{
   border: none !important;
   outline: none !important;
@@ -142,7 +170,7 @@ gumga-list .smart-footer-item ul li{
   padding: 16px 16px;
   font-size: 12px;
   color: rgba(0,0,0,0.87);
-  background: #F5F5F5;
+  background: #F5F5F5 !important;
   align-items: center;
   height: 48px;
 }
@@ -212,8 +240,6 @@ gumga-list .table-responsive{
 gumga-list .smart-grid-fixed{
   /*border-: #f5f5f5 !important;*/
 }
-
-
 
 
 gumga-list .pure-checkbox input[type="checkbox"], .pure-radiobutton input[type="checkbox"], .pure-checkbox input[type="radio"], .pure-radiobutton input[type="radio"] {

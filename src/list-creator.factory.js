@@ -9,7 +9,7 @@ function ListCreator() {
           </div>
         </div>
         <div class="col-md-1">
-          <select class="form-control input-sm" ng-options="item for item in ctrl.config.itemsPerPage" ng-model="ctrl.selectedItemPerPage">
+          <select class="form-control input-sm" ng-options="item for item in ctrl.listConfig.itemsPerPage" ng-model="ctrl.selectedItemPerPage">
           </select>
         </div>
       </div>`;
@@ -35,7 +35,7 @@ function ListCreator() {
           </div>
         </div>
 
-        <div class="page-select" ng-show="ctrl.config.itemsPerPage.length > 0">
+        <div class="page-select" ng-show="ctrl.listConfig.itemsPerPage.length > 0">
           <div class="btn-group smart-footer-item">
             <button type="button"
                     class="btn btn-default dropdown-toggle"
@@ -46,7 +46,7 @@ function ListCreator() {
             </button>
             <ul class="gmd dropdown-menu">
               <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? 'selected' : ''}}"
-                  ng-click="ctrl.changePage(page, itemPerPage)" ng-repeat="itemPerPage in ctrl.config.itemsPerPage">
+                  ng-click="ctrl.changePage(page, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">
                 {{itemPerPage}}
               </li>
             </ul>
@@ -130,6 +130,17 @@ function ListCreator() {
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
         <style ng-if="ctrl.listConfig.materialTheme">${style}</style>
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
+          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.listConfig.actions.length > 0)"
+               class="{{ctrl.listConfig.materialTheme ? 'panel-actions': ''}}">
+              <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>
+              <div class="actions">
+                <div  ng-repeat="action in ctrl.listConfig.actions"
+                      ng-click="action.onClick(ctrl.selectedValues, ctrl.data)"
+                      style="float: left;padding-left: 15px;"
+                      class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"
+                      ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>
+              </div>
+          </div>
           <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'TOP' || ctrl.pagePosition.toUpperCase() == 'ALL')"
                class="{{ctrl.listConfig.materialTheme ? 'panel-heading': ''}}"
                style="justify-content: {{ctrl.pageAlign}};">

@@ -7,9 +7,9 @@ List.$inject = ['$compile', 'listCreator']
 
 function List($compile, listCreator){
 
-    controller.$inject = ['$scope', '$element', '$attrs', '$timeout']
+    controller.$inject = ['$scope', '$element', '$attrs', '$timeout', '$sce']
 
-    function controller($scope, $element, $attrs, $timeout){
+    function controller($scope, $element, $attrs, $timeout, $sce){
       let ctrl = this
 
       const errorMessages = {
@@ -278,6 +278,8 @@ function List($compile, listCreator){
           }
         }
       }
+
+      ctrl.trustAsHtml = string => $sce.trustAsHtml(string);
 
     }
 
