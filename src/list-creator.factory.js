@@ -130,7 +130,7 @@ function ListCreator() {
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
         <style ng-if="ctrl.listConfig.materialTheme">${style}</style>
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
-          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.listConfig.actions.length > 0)"
+          <div ng-show="(ctrl.listConfig.materialTheme && (ctrl.listConfig.actions.length > 0 || ctrl.listConfig.title))"
                class="{{ctrl.listConfig.materialTheme ? 'panel-actions': ''}}">
               <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>
               <div class="actions">

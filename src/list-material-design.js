@@ -55,17 +55,10 @@ gumga-list .table>thead>tr>th{
 /**
   START PERSONALIZE ROWS
 **/
-gumga-list .table>tbody>tr:hover .smart-grid-fixed{
-  -webkit-transition: background-color 10ms linear;
-  -ms-transition: background-color 10ms linear;
-  transition: background-color 10ms linear;
-  background: #f5f5f5 !important;
-}
-
-gumga-list .table>tbody>tr:hover {
-  -webkit-transition: background-color 10ms linear;
-  -ms-transition: background-color 10ms linear;
-  transition: background-color 10ms linear;
+gumga-list .table>tbody>tr:hover .smart-grid-fixed, gumga-list .table>tbody>tr:hover{
+  -webkit-transition: background-color 300ms linear;
+  -ms-transition: background-color 300ms linear;
+  transition: background-color 300ms linear;
   background: #f5f5f5 !important;
 }
 
