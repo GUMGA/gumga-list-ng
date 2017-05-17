@@ -4,7 +4,8 @@
 <head>
   <title>Gumga List</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+  <meta name="viewport" content="width=device-width">
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
     <link rel="stylesheet" href="https://gumga.github.io/layout/dist/gumga-layout.css">
@@ -18,6 +19,9 @@
       }
       .nao-disponivel:hover{
         color: red !important;
+      }
+      html {
+        touch-action: manipulation;
       }
     </style>
 </head>
@@ -45,12 +49,13 @@
           <gumga-list sort="pessoa.methods.sort(field, dir)"
                       data="pessoa.data"
                       configuration="tableConfig"
-                      page-size="pessoa.pageSize" // quantidade de registros por pagina
-                      page-position="bottom"  // posição que aparecera a paginação, default: bottom / top, bottom, all
-                      page-align="flex-end" // alinhamento da paginação, default flex-end / flex-start, center, flex-end
+                      page-size="pessoa.pageSize"
+                      page-position="bottom"
+                      page-align="flex-end"
                       count="pessoa.count"
-                      page-model="page" // ng model da pagina atual
-                      on-page-change="pessoa.methods.get(page, pageSize)" // evento ao mudar de pagina ou quantidade de registros por pagina
+                      max-height="400px"
+                      page-model="page"
+                      on-page-change="pessoa.methods.get(page, pageSize)"
             ></gumga-list>
         </div>
       </div>
@@ -58,6 +63,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="../node_modules/angular/angular.min.js"></script>
   <script src="../node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
@@ -79,7 +85,7 @@
 
           $scope.page = 1;
 
-          $scope.pessoa.methods.get($scope.page);
+          $scope.pessoa.methods.get($scope.page, 10);
 
           $scope.changeColumns = function (teste) {
             $scope.tableConfig.columns = teste
@@ -88,22 +94,9 @@
 
           $scope.tableConfig = {
             columns: 'id, name, login',
-            itemsPerPage: [5, 10],
+            // itemsPerPage: [5, 10],
             checkbox: true,
             materialTheme: true,
-            title: 'Listagem de usuários',
-            actions: [
-              {
-                icon: '<i class="glyphicon glyphicon-trash"></i>',
-                label: 'Remover',
-                classOnSelectedValues: 'disponivel',
-                classOnNotSelectedValues: 'nao-disponivel',
-                onClick: function(selected, list){
-                  console.log(selected);
-                  console.log(list);
-                }
-              }
-            ],
             fixed: {
               "head" : true,
               "left" : 2

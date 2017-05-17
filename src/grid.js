@@ -125,43 +125,53 @@
                     }
                 }
 
+                function handlingFixed(parent, e){
+                    var scrollWidth  = parent[0].scrollWidth;
+                    var clientWidth  = parent[0].clientWidth;
+                    var scrollHeight = parent[0].scrollHeight;
+                    var clientHeight = parent[0].clientHeight;
+                    var top          = parent.scrollTop();
+                    var left         = parent.scrollLeft();
+
+                    if (settings.head)
+                        parent.find("thead tr > *").css("top", top);
+
+                    if (settings.foot)
+                        parent.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
+
+                    if (settings.left > 0){
+                      settings.leftColumns.css("left", (left));
+                      if(settings.class)
+                        settings.leftColumns.addClass(settings.class);
+                    }
+
+                    if (settings.right > 0){
+                      settings.rightColumns.css("right", scrollWidth - clientWidth - left);
+                      if(settings.class)
+                        settings.rightColumns.addClass(settings.class);
+                    }
+                }
+
                 function setParent() {
                     var parent = angular.element(settings.parent);
                     var table  = angular.element(settings.table);
-                    // parent.append(table);
                     parent
                         .css({
                             'overflow-x': 'auto',
                             'overflow-y': 'auto'
                         });
 
-                    parent.scroll(function () {
-                        var scrollWidth  = parent[0].scrollWidth;
-                        var clientWidth  = parent[0].clientWidth;
-                        var scrollHeight = parent[0].scrollHeight;
-                        var clientHeight = parent[0].clientHeight;
-                        var top          = parent.scrollTop();
-                        var left         = parent.scrollLeft();
+                    var lastMoment = 0;
 
-                        if (settings.head)
-                            parent.find("thead tr > *").css("top", top);
-
-                        if (settings.foot)
-                            parent.find("tfoot tr > *").css("bottom", scrollHeight - clientHeight - top);
-
-                        if (settings.left > 0){
-                          settings.leftColumns.css("left", left);
-                          if(settings.class)
-                            settings.leftColumns.addClass(settings.class);
-                        }
-
-                        if (settings.right > 0){
-                          settings.rightColumns.css("right", scrollWidth - clientWidth - left);
-                          if(settings.class)
-                            settings.rightColumns.addClass(settings.class);
-                        }
-
+                    angular.element(parent).bind('touchmove', function(ev) {
+                      handlingFixed(parent, ev);
                     });
+
+                    parent.scroll(function (ev) {
+                        ev.stopPropagation(); ev.preventDefault();
+                        handlingFixed(parent, ev);
+                    });
+
                 }
 
                 // Set table head fixed
@@ -253,6 +263,7 @@
                         background     = elementBackground ? elementBackground : background;
                         // element.css("background-color", background);
                         element.css("background-color", "white");
+                        element.css("touch-action", "manipulation");
                     });
                 }
 
