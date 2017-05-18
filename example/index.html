@@ -33,32 +33,24 @@
       <br>
       <br>
 
-      <div class="col-md-8 col-md-offset-2">
-        <div class="row">
-          <div class="col-md-12">
-            <button class="btn btn-default" ng-click="changeColumns('id, name, view')">
-              Adicione Ações
-            </button>
-            <button class="btn btn-default" ng-click="changeColumns('id, name, login')">
-              Adicione Login
-            </button>
-            <br>  <br>
-          </div>
-        </div>
-        <div class="">
-          <gumga-list sort="pessoa.methods.sort(field, dir)"
+      <div class="col-md-12">
+        <div class="col-md-12">
+          <gumga-list sort="pessoa.methods.sort(field, dir, pageSize)"
                       data="pessoa.data"
+                      name="pessoa"
                       configuration="tableConfig"
                       page-size="pessoa.pageSize"
+                      class="table-condensed"
                       page-position="bottom"
                       page-align="flex-end"
                       count="pessoa.count"
-                      max-height="400px"
                       page-model="page"
+                      on-row-change="mudar(row)"
                       on-page-change="pessoa.methods.get(page, pageSize)"
             ></gumga-list>
         </div>
       </div>
+
     </form>
   </div>
 
@@ -74,12 +66,13 @@
     angular.module('yourApp', ['gumga.rest','gumga.controller','gumga.list'])
       .config(function ($httpProvider) {
         $httpProvider.defaults.headers.common['gumgaToken'] = 'eterno'
+        // $httpProvider.defaults.headers.common['gumgaToken'] = 'homologacaokids'
         // $httpProvider.defaults.headers.common['gumgaToken'] = 'batistakids'
       })
       .controller('manyToOneCtrl', ['GumgaRest','gumgaController','$scope', '$http',
         function (GumgaRest,gumgaController,$scope, $http) {
           var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
-          // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/historico');
+          // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
           gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
@@ -87,16 +80,76 @@
 
           $scope.pessoa.methods.get($scope.page, 10);
 
-          $scope.changeColumns = function (teste) {
-            $scope.tableConfig.columns = teste
-            $scope.tableConfig = angular.copy($scope.tableConfig)
+          $scope.mudar = function(row){
+            console.log('Editado inline --> ', row);
           }
+
+          $scope.tableConfig2 = {
+            columns: 'foto, nome, tipoIntegrante, fonePrincipal, button',
+            checkbox: true,
+            resizable: true,
+            sortDefault: "nome",
+            itemsPerPage: [5,10],
+            materialTheme: true,
+            fixed: {
+                left: 2
+            },
+            selection: "multi",
+            columnsConfig: [
+                {
+                    name: 'foto',
+                    title: '<span gumga-translate-tag="pessoa.foto" style="color:#3782c4 "> Foto </span>',
+                    content: "<img ng-if='$value.foto' class='img-circle' width='30px' height='30px' alt='Embedded Image' ng-src='data:image/png;base64,{{$value.foto.bytes}}'/> " +
+                    '<div ng-show="!$value.foto" class="wmf-text-ellipsis" ng-init="imageConvert = $parent.$parent.iconePessoa()" ng-bind-html="imageConvert"></div>',
+                    size: 'col-lg-1 col-md-1 col-sm-1 col-xs-2'
+                },
+                {
+                    name: 'tipoIntegrante',
+                    possibleColumn: true,
+                    label: 'Tipo de integrante',
+                    title: '<span gumga-translate-tag="pessoa.tipoIntegrante"> tipoIntegrante </span>',
+                    content: '<div class="wmf-text-ellipsis" uib-tooltip="{{$value.tipoIntegrante.nome}}">{{$value.tipoIntegrante.nome}}</div>',
+                    sortField: 'tipoIntegrante',
+                    size: 'col-lg-2 col-md-2 col-sm-2'
+                },
+                {
+                    name: 'ativo',
+                    label: 'Ativo',
+                    title: '<span gumga-translate-tag="pessoa.status"> ativo </span>',
+                    content: '<div class="wmf-text-ellipsis" uib-tooltip="{{$value.ativo ? \'ATIVO\' : \'INATIVO\' }}">{{$value.ativo ? "ATIVO" : "INATIVO"}}</div>',
+                    sortField: 'ativo',
+                    size: 'col-lg-1 col-md-1 col-sm-1'
+                },
+                {
+                    name: 'nome',
+                    editable: true,
+                    title: '<span gumga-translate-tag="pessoa.nome"> nome </span>',
+                    content: '<div class="wmf-text-ellipsis" uib-tooltip="{{$value.nome}}">{{$value.nome}}</div>',
+                    sortField: 'nome',
+                    size: 'col-lg-3 col-md-3 col-sm-3 col-xs-6'
+                },
+                {
+                    name: 'fonePrincipal',
+                    title: '<span gumga-translate-tag="pessoa.fonePrincipal" style="color:#3782c4 "> telefonePrincipal </span>',
+                    content: '<div class="wmf-text-ellipsis" uib-tooltip="{{$parent.$parent.formatPhoneNumber($value.telefonePrincipal)}}">{{$parent.$parent.formatPhoneNumber($value.telefonePrincipal)}}</div>',
+                    size: 'col-lg-2 col-md-2 col-sm-2 col-xs-2'
+                },
+                {
+                    name: 'button',
+                    title: ' ',
+                    content: '<span class="pull-right"><a class="btn btn-primary btn-sm" ui-sref="pessoacadastro.edit({id: $value.id })"><i class="glyphicon glyphicon-pencil"></i></a></span>',
+                    size: 'col-lg-1 col-md-1 col-sm-1 col-xs-2'
+                }]
+        };
 
           $scope.tableConfig = {
             columns: 'id, name, login',
-            // itemsPerPage: [5, 10],
+            itemsPerPage: [5, 10],
+            // enabledBetweenLines: true,
+            // actions: [{icon: '<i class="glyphicon glyphicon-search" aria-hidden="true"></i>'}],
             checkbox: true,
             materialTheme: true,
+            resizable: true,
             fixed: {
               "head" : true,
               "left" : 2
@@ -105,12 +158,17 @@
             columnsConfig: [
               {
                 name: 'id',
+                // possibleColumn: true,
+                // possibleColumn: true,
                 title: 'Codigo',
                 content: '{{$value.id}}',
                 sortField: 'id'
               },
               {
                 name: 'name',
+                editable: true,
+                // possibleColumn: true,
+                // possibleColumn: true,
                 title: 'Nome completo',
                 content: '{{$value.name}}',
                 sortField: 'name'

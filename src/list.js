@@ -1,5 +1,6 @@
 require('./list-creator.factory.js')
 require('./grid.js')
+require('./grid.resize.js')
 
 import style from './list-material-design';
 
@@ -15,7 +16,8 @@ function List($compile, listCreator){
       const errorMessages = {
         noData: 'O componente gumgaList necessita de um atributo data, que irá conter os dados que serão visualizados.',
         noConfig: 'O componente gumgaList necessita de um atributo config, que irá conter a configuração necessária.',
-        noColumns:  'O componente gumgaList necessita que, no objeto de configuração, exista um atributo columns.'
+        noColumns:  'O componente gumgaList necessita que, no objeto de configuração, exista um atributo columns.',
+        perPageNoArray:  'O atributo itemsPerPage do gumgaList precisa ser um array, por exemplo - itemsPerPage: [5, 10, 15]'
       }
 
       const hasAttr             = string  => !!$attrs[string],
@@ -31,12 +33,15 @@ function List($compile, listCreator){
           let column        = rawColumn.trim(),
               configuration = columnsConfig.filter(value => value.name == column)[0] || { name: column };
           let title         = configuration.title       || (column.charAt(0).toUpperCase() + column.slice(1)),
-              size          = configuration.size        ||  ' ',
+              size          = configuration.resizable && configuration.size ? configuration.size :  ' ',
               name          = configuration.name        ||  column,
+              editable      = configuration.editable    ||  false,
+              possibleColumn= configuration.possibleColumn    ||  false,
+              label         = configuration.label       ||  column,
               content       = configuration.content     ||  '{{$value.' + column + '}}',
               sortField     = configuration.sortField   ||  null,
               conditional   = configuration.conditional || angular.noop
-          return { title, size, name, content, sortField, conditional }
+          return { title, size, name, content, sortField, conditional, editable, possibleColumn, label }
         })
       }
 
@@ -65,9 +70,10 @@ function List($compile, listCreator){
       }
 
       // Tratamento de erros do componente.
-      if(!hasAttr('data'))           console.error(errorMessages.noData)
-      if(!hasAttr('configuration'))  console.error(errorMessages.noConfig)
-      if(!hasConfig('columns'))      console.error(errorMessages.noColumns)
+      if(!hasAttr('data'))             console.error(errorMessages.noData)
+      if(!hasAttr('configuration'))    console.error(errorMessages.noConfig)
+      if(!hasConfig('columns'))        console.error(errorMessages.noColumns)
+
       // Variáveis e funções utilizadas pelo componente durante tempo de execução.
       ctrl.selectedValues       = []
       ctrl.selectedMap          = {}
@@ -83,9 +89,18 @@ function List($compile, listCreator){
 
       if(ctrl.config.sortDefault != null) ctrl.doSort(ctrl.config.sortDefault)
 
-      $scope.$parent.selectedValues = ctrl.selectedValues
+      $scope.$parent.selectedValues = ctrl.selectedValues;
 
       $scope.$watch('ctrl.config', (value) => {
+        value.columnsConfig
+            .forEach((column) => {
+                if(column.possibleColumn){
+                  value.columns = value.columns.replace(/\s/g,'');
+                  value.columns = ctrl.replaceAll(value.columns, ','+column.name, '');
+                  value.columns = ctrl.replaceAll(value.columns, column.name+',', '');
+                  value.columns = ctrl.replaceAll(value.columns, column.name, '');
+                }
+            });
         ctrl.listConfig = angular.copy(value);
         guaranteeConfig();
         compileElement()
@@ -95,6 +110,7 @@ function List($compile, listCreator){
       $scope.$watch('ctrl.data', () => {
           updateMap(ctrl.data);
           handlingGrid();
+          ctrl.loading = false;
       }, true)
 
       $scope.$watch('ctrl.selectedValues', (newVal = [], oldVal = []) => updateSelected(newVal, newVal.length - oldVal.length >= 0, oldVal), true)
@@ -158,7 +174,6 @@ function List($compile, listCreator){
         for(let key in obj){
           obj[key] === true ? trueValue = key : falseValue = key
         }
-
         if(trueValue) return '\"'.concat(trueValue).concat('\"')
         return '\'\''
       }
@@ -177,16 +192,20 @@ function List($compile, listCreator){
               falseValue = key
             }
           }
+
           return '\"'.concat(trueValue).concat('\"')
         }
         return '\'\''
       }
 
       function doSort(sortField){
+        if(ctrl.activeSorted.direction){
+          ctrl.loading = true;
+        }
         ctrl.activeSorted.column = sortField
         ctrl.activeSorted.direction = ctrl.activeSorted.direction == 'asc' ? 'desc' : 'asc'
-        ctrl.sort({field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction})
-        ctrl.onSort({field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction})
+        ctrl.sort({field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction, pageSize: ctrl.pageSize})
+        ctrl.onSort({field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction, pageSize: ctrl.pageSize})
       }
 
       function doubleClick($value){
@@ -217,7 +236,7 @@ function List($compile, listCreator){
       // Compilação do componente na tela.
       function compileElement() {
         $element.html('')
-        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style))
+        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style, ctrl.getTableId()))
         $element.append($compile(element)($scope))
       }
       try {
@@ -228,6 +247,8 @@ function List($compile, listCreator){
         if(ctrl.listConfig.fixed){
           $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
+        // var resize = new SmartGridResize($element.find('table')[0], {fixed: true});
+        // console.log(resize);
       }
 
       ctrl.getTotalPage = () => {
@@ -240,6 +261,9 @@ function List($compile, listCreator){
 
       ctrl.changePage = (page, itensPerPage) => {
           if(ctrl.onPageChange){
+            if(page != ctrl.pageModel || itensPerPage != ctrl.pageSize){
+              ctrl.loading = true;
+            }
             ctrl.pageSize = itensPerPage || ctrl.pageSize;
             ctrl.pageModel = page || ctrl.pageModel;
             ctrl.onPageChange({page: page, pageSize: ctrl.pageSize});
@@ -248,9 +272,18 @@ function List($compile, listCreator){
 
       ctrl.previousPage = () => {
           if(ctrl.onPageChange && ctrl.existsPreviousPage()){
+            ctrl.loading = true;
             ctrl.onPageChange({page: ctrl.pageModel-1, pageSize: ctrl.pageSize});
             ctrl.pageModel = ctrl.pageModel-1;
           }
+      }
+
+      ctrl.nextPage = () => {
+        if(ctrl.onPageChange && ctrl.existsNextPage()){
+          ctrl.loading = true;
+          ctrl.onPageChange({page: ctrl.pageModel+1, pageSize: ctrl.pageSize});
+          ctrl.pageModel = ctrl.pageModel+1;
+        }
       }
 
       ctrl.roundNumber = (count, pageSize, pageModel) => {
@@ -263,16 +296,10 @@ function List($compile, listCreator){
 
       ctrl.existsNextPage = () => ((ctrl.pageModel+1) <= Math.ceil(ctrl.count/ctrl.pageSize));
 
-      ctrl.nextPage = () => {
-          if(ctrl.onPageChange && ctrl.existsNextPage()){
-            ctrl.onPageChange({page: ctrl.pageModel+1, pageSize: ctrl.pageSize});
-            ctrl.pageModel = ctrl.pageModel+1;
-          }
-      }
-
       ctrl.inputPageChange = (evt) => {
         if(evt.keyCode == 13){
-          if(ctrl.onPageChange && (Number(evt.target.value) <= Math.ceil(ctrl.count/ctrl.pageSize))){
+          if(ctrl.onPageChange && (Number(evt.target.value) <= Math.ceil(ctrl.count/ctrl.pageSize)) && evt.target.value != ctrl.pageModel){
+            ctrl.loading = true;
             ctrl.onPageChange({page: evt.target.value, pageSize: ctrl.pageSize});
             ctrl.pageModel = Number(evt.target.value);
           }
@@ -281,11 +308,90 @@ function List($compile, listCreator){
 
       ctrl.trustAsHtml = string => $sce.trustAsHtml(string);
 
+      ctrl.replaceAll = function(style, needle, replacement) {
+          return style.replace(new RegExp(needle, 'g'), replacement);
+      };
+
+      ctrl.getStyleMaterialDesign = () => {
+         let height = ctrl.listConfig.lineHeight || 48;
+         let s = ctrl.replaceAll(style, 'LINE_HEIGHT_VALUE', (height) + 'px');
+         if(ctrl.name){
+           s = ctrl.replaceAll(s, 'GUMGA_LIST_KEY', 'gumga-list[name="'+ctrl.name+'"]');
+         }else{
+           s = ctrl.replaceAll(s, 'GUMGA_LIST_KEY', 'gumga-list');
+         }
+         return s;
+      }
+
+      ctrl.handlingLineHeight = (height) => {
+        ctrl.listConfig.lineHeight = height;
+        ctrl.getStyleMaterialDesign();
+      }
+
+      ctrl.editInline = (ev, row, column) => {
+        var columnConfig = ctrl.listConfig.columnsConfig.filter(val => val.name == column)[0];
+        if(columnConfig && columnConfig.editable){
+          ev.stopPropagation();
+          var value = angular.element(ev.target).html();
+          ctrl.updateVal(ev.target, row, column, value.trim());
+        }
+      }
+
+      ctrl.rowUpdate = (ev, currentEle, row, column) => {
+          let newValue = angular.element(ev.target).val().trim();
+          angular.element(currentEle).html(newValue);
+          row[column] = newValue;
+          if(!ctrl.onRowChange){
+            throw "O gumga-list precisa que você informe o atributo on-row-change para saber quando os registros forem alterados.";
+          }
+          ctrl.onRowChange({row: row});
+      }
+
+      ctrl.updateVal = (currentEle, row, column, value) => {
+        angular.element(currentEle)
+               .html('<input class="input-inline-edit" type="text" value="' + value + '" />');
+        let input = angular.element(currentEle).find('input');
+            input.focus();
+            input.select();
+            input.keyup((ev)=> {
+              if (ev.keyCode == 13) {
+                  ctrl.rowUpdate(ev, currentEle, row, column);
+              }
+            });
+            input.blur((ev) => {
+                  ctrl.rowUpdate(ev, currentEle, row, column);
+            });
+            input.click(function(e) {
+                    e.stopPropagation();
+                  });
+      }
+
+      ctrl.getPossibleColumns = () => {
+          let toReturn =  ctrl.config.columnsConfig
+              .filter(column => {
+                  return column.possibleColumn;
+              });
+          return toReturn;
+      }
+
+      ctrl.addColumn =  column => {
+        column.possibleColumn = false;
+        ctrl.config.columns = column.name + ',' + ctrl.config.columns;
+        ctrl.config.columnsConfig.unshift(column);
+        ctrl.config = angular.copy(ctrl.config);
+      }
+
+      ctrl.getTableId = () => {
+        var ramdomId = (window.Math.random().toString());
+        return ctrl.name ? 'gumga-list-' + ctrl.name : 'gumga-list-'+ctrl.replaceAll(ramdomId, '.', '');
+      }
+
     }
 
     return {
       restrict: 'E',
       scope: {
+        'name': '@?',
         'sort': '&?',
         'data': '=',
         'selectedValues': '=?',
@@ -300,7 +406,8 @@ function List($compile, listCreator){
         'pageSize': '=?',
         'count': '=?',
         'pageModel': '=?',
-        'onPageChange': '&?'
+        'onPageChange': '&?',
+        'onRowChange': '&?'
       },
       bindToController: true,
       controllerAs: 'ctrl',
@@ -308,5 +415,5 @@ function List($compile, listCreator){
     }
 }
 
-angular.module('gumga.list', ['gumga.list.creator'])
+angular.module('gumga.list', ['gumga.list.creator', 'ngSmartGridResize'])
   .directive('gumgaList', List)

@@ -1,29 +1,57 @@
 export default `
 
-gumga-list .table{
+GUMGA_LIST_KEY table.resize th {
+    position: relative;
+    min-width: 10px !important;
+}
+
+GUMGA_LIST_KEY table.resize tr th .handle {
+    width: 2px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0px;
+    cursor: ew-resize !important;
+    background: #f3f3f3;
+}
+
+GUMGA_LIST_KEY table.resize tr th .handle.active {
+    background: #ddd;
+}
+
+@media only screen and (max-device-width: 480px) {
+
+    GUMGA_LIST_KEY table.resize tr th .handle {
+        display: none;
+    }
+
+}
+
+GUMGA_LIST_KEY .table{
   margin: 0;
 }
 
-gumga-list tr{
+GUMGA_LIST_KEY tr{
   transition: background-color .2s;
-  height: 48px !important;
+  height: LINE_HEIGHT_VALUE !important;
   font-family: Roboto,"Helvetica Neue",sans-serif;
 }
 
-gumga-list tr th a:hover{
+GUMGA_LIST_KEY tr th a:hover{
   color: #525252;
   text-decoration: none;
   cursor: pointer;
 }
 
-gumga-list .panel-footer, gumga-list .panel-heading{
+GUMGA_LIST_KEY .panel-footer, GUMGA_LIST_KEY .panel-heading{
   padding: 10px;
   text-align: right;
   background-color: #fff;
   border-top: 0;
+  padding-bottom: 0;
 }
 
-gumga-list .panel-actions{
+GUMGA_LIST_KEY .panel-actions{
   border-bottom: 1px solid transparent;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
@@ -31,38 +59,40 @@ gumga-list .panel-actions{
   box-sizing: border-box;
   font-size: 12px;
   color: rgba(0,0,0,.54);
-  border-top: 1px rgba(0,0,0,.12) solid !important;
+  border-top: 1px rgba(0,0,0,.12) solid;
   background-color: #fff;
   padding: 10px 24px;
   display: flex;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-gumga-list .panel-actions .actions{
+GUMGA_LIST_KEY .panel-actions .actions{
   margin-left: auto;
   padding-top: 10px;
 }
 
-gumga-list .panel-actions .actions i {
+GUMGA_LIST_KEY .panel-actions .actions i,  GUMGA_LIST_KEY .panel-actions .actions span{
   font-size: 20px;
   cursor: pointer;
 }
 
-gumga-list .table>thead>tr>th{
+GUMGA_LIST_KEY .table>thead>tr>th{
   border: none !important;
-  vertical-align: initial !important;
+  vertical-align: middle !important;
 }
 
 /**
   START PERSONALIZE ROWS
 **/
-gumga-list .table>tbody>tr:hover .smart-grid-fixed, gumga-list .table>tbody>tr:hover{
+GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed, GUMGA_LIST_KEY .table>tbody>tr:hover{
   -webkit-transition: background-color 300ms linear;
   -ms-transition: background-color 300ms linear;
   transition: background-color 300ms linear;
   background: #f5f5f5 !important;
 }
 
-gumga-list .active-list .smart-grid-fixed {
+GUMGA_LIST_KEY .active-list .smart-grid-fixed {
   background: #f5f5f5 !important;
 }
 
@@ -97,15 +127,41 @@ gumga-list .active-list .smart-grid-fixed {
   transition: 0s;
 }
 
-gumga-list .panel .panel-body{
+GUMGA_LIST_KEY .signal {
+  border: 5px solid #333;
+  border-radius: 30px;
+  height: 30px;
+  left: 35px;
+  opacity: 0;
+  position: absolute;
+  width: 30px;
+  animation: pulsate 1s ease-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pulsate {
+    0% {
+      transform: scale(.1);
+      opacity: 0.0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+}
+
+GUMGA_LIST_KEY .panel .panel-body{
   margin: 0 !important;
 }
 
-gumga-list .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active{
+GUMGA_LIST_KEY .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active{
   background: #f5f5f5 !important;
 }
 
-gumga-list .smart-footer-item button{
+GUMGA_LIST_KEY .smart-footer-item button{
   border: none !important;
   outline: none !important;
   background: #fff;
@@ -115,18 +171,19 @@ gumga-list .smart-footer-item button{
   padding-bottom: 0;
 }
 
-gumga-list .smart-footer-item > button:hover, gumga-list .smart-footer-item > button:active{
+GUMGA_LIST_KEY .smart-footer-item > button:hover, GUMGA_LIST_KEY .smart-footer-item > button:active{
   background: #fff;
   outline: none !important;
   color: #000000;
+  box-shadow: none;
 }
 
-gumga-list .btn-default.active.focus, .btn-default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover{
+GUMGA_LIST_KEY .btn-default.active.focus, .btn-default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover{
   box-shadow: none;
   background: #fff;
 }
 
-gumga-list .smart-footer-item ul{
+GUMGA_LIST_KEY .smart-footer-item ul{
   margin-top: -32px;
   width: 136px !important;
   min-height: 48px;
@@ -139,11 +196,11 @@ gumga-list .smart-footer-item ul{
   border: none!important;
 }
 
-gumga-list .smart-footer-item{
+GUMGA_LIST_KEY .smart-footer-item{
   font-size: 13px;
 }
 
-gumga-list  .dropdown-menu {
+GUMGA_LIST_KEY  .dropdown-menu {
     -webkit-transition: all .5s ease-out;
     transition: all .5s ease-out;
     transform: rotateX(90deg);
@@ -152,13 +209,13 @@ gumga-list  .dropdown-menu {
     display: block;
 }
 
-gumga-list  .open .dropdown-menu {
+GUMGA_LIST_KEY  .open .dropdown-menu {
     opacity: 1;
     transform: rotateX(0deg);
     transform-origin: top;
 }
 
-gumga-list .smart-footer-item ul li{
+GUMGA_LIST_KEY .smart-footer-item ul li{
   cursor: pointer;
   padding: 16px 16px;
   font-size: 12px;
@@ -168,23 +225,23 @@ gumga-list .smart-footer-item ul li{
   height: 48px;
 }
 
-gumga-list .smart-footer-item ul li.search{
+GUMGA_LIST_KEY .smart-footer-item ul li.search{
   margin: 0 !important;
   padding: 0 !important;
 }
 
-gumga-list .smart-footer-item ul li.search input{
+GUMGA_LIST_KEY .smart-footer-item ul li.search input{
   border: none;
   border-radius: 0;
   box-shadow: none;
   background: #fff;
 }
 
-gumga-list .smart-footer-item ul li.selected{
+GUMGA_LIST_KEY .smart-footer-item ul li.selected{
   color: rgb(33,150,243);
 }
 
-gumga-list .panel .panel-footer, gumga-list .panel .panel-heading{
+GUMGA_LIST_KEY .panel .panel-footer, GUMGA_LIST_KEY .panel .panel-heading{
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -201,10 +258,10 @@ gumga-list .panel .panel-footer, gumga-list .panel .panel-heading{
   padding: 0px 24px;
   font-size: 12px;
   color: rgba(0,0,0,.54);
-  border-top: 1px rgba(0,0,0,.12) solid !important;
+  border-top: 1px rgba(0,0,0,.12) solid;
 }
 
-gumga-list .panel .panel-footer .page-select, gumga-list .panel .panel-heading .page-select{
+GUMGA_LIST_KEY .panel .panel-footer .page-select, GUMGA_LIST_KEY .panel .panel-heading .page-select{
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -214,28 +271,45 @@ gumga-list .panel .panel-footer .page-select, gumga-list .panel .panel-heading .
   height: 56px;
 }
 
-gumga-list td[class*="td-checkbox"], gumga-list th, gumga-list td[class*="ng-binding"]{
-  font-family: Roboto,"Helvetica Neue",sans-serif;
-  padding: 17px 0px 0px 24px !important;
-  color: rgba(0,0,0,.87) !important;
-  font-size: 13px !important;
-  border-top: 1px rgba(0,0,0,.12) solid !important;
+GUMGA_LIST_KEY .input-inline-edit{
+    background: transparent !important;
+    border: none !important;
+    outline: 1px solid #ccc !important;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+    max-width: 100% !important;
+    width: 100% !important;
 }
 
-gumga-list tr td < span:nth-child(n+10) {
+GUMGA_LIST_KEY td[class*="td-checkbox"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[class*="ng-binding"]{
+  font-family: Roboto,"Helvetica Neue",sans-serif;
+  padding: 0px 0px 0px 24px !important;
+  color: rgba(0,0,0,.87) !important;
+  font-size: 13px !important;
+  border-top: 1px rgba(0,0,0,.12) solid;
+  vertical-align: middle;
+}
+
+
+GUMGA_LIST_KEY table td:not(:empty){
+   padding: 0px 24px 0px 24px;
+   vertical-align: middle;
+}
+
+GUMGA_LIST_KEY tr td < span:nth-child(n+10) {
     background-color:red !important;
 }
 
-gumga-list .table-responsive{
+GUMGA_LIST_KEY .table-responsive{
   border: none;
 }
 
-gumga-list .smart-grid-fixed{
+GUMGA_LIST_KEY .smart-grid-fixed{
   /*border-: #f5f5f5 !important;*/
 }
 
 
-gumga-list .pure-checkbox input[type="checkbox"], .pure-radiobutton input[type="checkbox"], .pure-checkbox input[type="radio"], .pure-radiobutton input[type="radio"] {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"], .pure-radiobutton input[type="checkbox"], .pure-checkbox input[type="radio"], .pure-radiobutton input[type="radio"] {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
@@ -246,14 +320,14 @@ gumga-list .pure-checkbox input[type="checkbox"], .pure-radiobutton input[type="
   width: 1px;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"]:focus + label:before, .pure-radiobutton input[type="checkbox"]:focus + label:before, .pure-checkbox input[type="radio"]:focus + label:before, .pure-radiobutton input[type="radio"]:focus + label:before, .pure-checkbox input[type="checkbox"]:hover + label:before, .pure-radiobutton input[type="checkbox"]:hover + label:before, .pure-checkbox input[type="radio"]:hover + label:before, .pure-radiobutton input[type="radio"]:hover + label:before {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:focus + label:before, .pure-radiobutton input[type="checkbox"]:focus + label:before, .pure-checkbox input[type="radio"]:focus + label:before, .pure-radiobutton input[type="radio"]:focus + label:before, .pure-checkbox input[type="checkbox"]:hover + label:before, .pure-radiobutton input[type="checkbox"]:hover + label:before, .pure-checkbox input[type="radio"]:hover + label:before, .pure-radiobutton input[type="radio"]:hover + label:before {
   border-color: #4f8196;
   background-color: #f2f2f2;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"]:active + label:before, .pure-radiobutton input[type="checkbox"]:active + label:before, .pure-checkbox input[type="radio"]:active + label:before, .pure-radiobutton input[type="radio"]:active + label:before { transition-duration: 0s; }
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:active + label:before, .pure-radiobutton input[type="checkbox"]:active + label:before, .pure-checkbox input[type="radio"]:active + label:before, .pure-radiobutton input[type="radio"]:active + label:before { transition-duration: 0s; }
 
-gumga-list .pure-checkbox input[type="checkbox"] + label, .pure-radiobutton input[type="checkbox"] + label, .pure-checkbox input[type="radio"] + label, .pure-radiobutton input[type="radio"] + label {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label, .pure-radiobutton input[type="checkbox"] + label, .pure-checkbox input[type="radio"] + label, .pure-radiobutton input[type="radio"] + label {
   position: relative;
   padding-left: 2em;
   vertical-align: middle;
@@ -261,7 +335,7 @@ gumga-list .pure-checkbox input[type="checkbox"] + label, .pure-radiobutton inpu
   cursor: pointer;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"] + label:before, .pure-radiobutton input[type="checkbox"] + label:before, .pure-checkbox input[type="radio"] + label:before, .pure-radiobutton input[type="radio"] + label:before {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:before, .pure-radiobutton input[type="checkbox"] + label:before, .pure-checkbox input[type="radio"] + label:before, .pure-radiobutton input[type="radio"] + label:before {
   box-sizing: content-box;
   content: '';
   color: #4f8196;
@@ -276,7 +350,7 @@ gumga-list .pure-checkbox input[type="checkbox"] + label:before, .pure-radiobutt
   transition: all 0.4s ease;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutton input[type="checkbox"] + label:after, .pure-checkbox input[type="radio"] + label:after, .pure-radiobutton input[type="radio"] + label:after {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutton input[type="checkbox"] + label:after, .pure-checkbox input[type="radio"] + label:after, .pure-radiobutton input[type="radio"] + label:after {
   box-sizing: content-box;
   content: '';
   background-color: #4f8196;
@@ -291,13 +365,13 @@ gumga-list .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutto
   transition: transform 200ms ease-out;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"]:disabled + label:before, .pure-radiobutton input[type="checkbox"]:disabled + label:before, .pure-checkbox input[type="radio"]:disabled + label:before, .pure-radiobutton input[type="radio"]:disabled + label:before { border-color: #cccccc; }
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:disabled + label:before, .pure-radiobutton input[type="checkbox"]:disabled + label:before, .pure-checkbox input[type="radio"]:disabled + label:before, .pure-radiobutton input[type="radio"]:disabled + label:before { border-color: #cccccc; }
 
-gumga-list .pure-checkbox input[type="checkbox"]:disabled:focus + label:before, .pure-radiobutton input[type="checkbox"]:disabled:focus + label:before, .pure-checkbox input[type="radio"]:disabled:focus + label:before, .pure-radiobutton input[type="radio"]:disabled:focus + label:before, .pure-checkbox input[type="checkbox"]:disabled:hover + label:before, .pure-radiobutton input[type="checkbox"]:disabled:hover + label:before, .pure-checkbox input[type="radio"]:disabled:hover + label:before, .pure-radiobutton input[type="radio"]:disabled:hover + label:before { background-color: inherit; }
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:disabled:focus + label:before, .pure-radiobutton input[type="checkbox"]:disabled:focus + label:before, .pure-checkbox input[type="radio"]:disabled:focus + label:before, .pure-radiobutton input[type="radio"]:disabled:focus + label:before, .pure-checkbox input[type="checkbox"]:disabled:hover + label:before, .pure-radiobutton input[type="checkbox"]:disabled:hover + label:before, .pure-checkbox input[type="radio"]:disabled:hover + label:before, .pure-radiobutton input[type="radio"]:disabled:hover + label:before { background-color: inherit; }
 
-gumga-list .pure-checkbox input[type="checkbox"]:disabled:checked + label:before, .pure-radiobutton input[type="checkbox"]:disabled:checked + label:before, .pure-checkbox input[type="radio"]:disabled:checked + label:before, .pure-radiobutton input[type="radio"]:disabled:checked + label:before { background-color: #cccccc; }
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:disabled:checked + label:before, .pure-radiobutton input[type="checkbox"]:disabled:checked + label:before, .pure-checkbox input[type="radio"]:disabled:checked + label:before, .pure-radiobutton input[type="radio"]:disabled:checked + label:before { background-color: #cccccc; }
 
-gumga-list .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutton input[type="checkbox"] + label:after {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutton input[type="checkbox"] + label:after {
   background-color: transparent;
   top: 50%;
   left: 4px;
@@ -311,27 +385,32 @@ gumga-list .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutto
   transform: rotate(-45deg) scale(0);
 }
 
-gumga-list .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after {
+GUMGA_LIST_KEY .pure-checkbox{
+  width: 18px;
+  display: inline-block;
+}
+
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after {
   content: '';
   transform: rotate(-45deg) scale(1);
   transition: transform 200ms ease-out;
 }
 
-gumga-list .pure-checkbox input[type="radio"]:checked + label:before, .pure-radiobutton input[type="radio"]:checked + label:before {
+GUMGA_LIST_KEY .pure-checkbox input[type="radio"]:checked + label:before, .pure-radiobutton input[type="radio"]:checked + label:before {
   animation: borderscale 300ms ease-in;
   background-color: white;
 }
 
-gumga-list .pure-checkbox input[type="radio"]:checked + label:after, .pure-radiobutton input[type="radio"]:checked + label:after { transform: scale(1); }
+GUMGA_LIST_KEY .pure-checkbox input[type="radio"]:checked + label:after, .pure-radiobutton input[type="radio"]:checked + label:after { transform: scale(1); }
 
-gumga-list .pure-checkbox input[type="radio"] + label:before, .pure-radiobutton input[type="radio"] + label:before, .pure-checkbox input[type="radio"] + label:after, .pure-radiobutton input[type="radio"] + label:after { border-radius: 50%; }
+GUMGA_LIST_KEY .pure-checkbox input[type="radio"] + label:before, .pure-radiobutton input[type="radio"] + label:before, .pure-checkbox input[type="radio"] + label:after, .pure-radiobutton input[type="radio"] + label:after { border-radius: 50%; }
 
-gumga-list .pure-checkbox input[type="checkbox"]:checked + label:before, .pure-radiobutton input[type="checkbox"]:checked + label:before {
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:before, .pure-radiobutton input[type="checkbox"]:checked + label:before {
   animation: borderscale 200ms ease-in;
   background: #4f8196;
 }
 
-gumga-list .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after { transform: rotate(-45deg) scale(1); }
+GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after { transform: rotate(-45deg) scale(1); }
 
 @keyframes
 borderscale {  50% {

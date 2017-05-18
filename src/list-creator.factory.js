@@ -1,6 +1,7 @@
 ListCreator.$inject = [];
 //TODO: Otimizar estas funções de criação de HTML.
 function ListCreator() {
+  // TEMPLATE DA VERSÃO SEM MATERIAL DESIGN
   const itemsPerPage = `
       <div class="row">
         <div class="col-md-offset-9 col-md-2">
@@ -28,7 +29,7 @@ function ListCreator() {
               <li class="search">
                 <input type="number" min="1" step="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" autofocus max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="Página" class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>
               </li>
-              <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page)" ng-repeat="page in ctrl.getTotalPage()">
+              <li class="effect-ripple {{page == ctrl.pageModel ? 'selected' : ''}}" ng-click="ctrl.changePage(page, ctrl.pageSize)" ng-repeat="page in ctrl.getTotalPage()">
                 {{page}}
               </li>
             </ul>
@@ -46,7 +47,7 @@ function ListCreator() {
             </button>
             <ul class="gmd dropdown-menu">
               <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? 'selected' : ''}}"
-                  ng-click="ctrl.changePage(page, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">
+                  ng-click="ctrl.changePage(ctrl.pageModel, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">
                 {{itemPerPage}}
               </li>
             </ul>
@@ -73,18 +74,18 @@ function ListCreator() {
     return !!sortField ? templateWithSort : title;
   }
 
-  function generateHeader(config) {
+  function generateHeader(config, tableId) {
     if (config.headers) {
       return `
-              ${generateHeaderColumns(config.columnsConfig)}
+              ${generateHeaderColumns(config.columnsConfig, undefined, tableId)}
         `
     } else { return '' }
   }
 
-  function generateHeaderColumns(columnsArray = [], hasCheckbox = true) {
+  function generateHeaderColumns(columnsArray = [], hasCheckbox = true, tableId) {
     return columnsArray.reduce((prev, next) => {
       return prev += `
-          <th style="${next.style || ' '} white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
+          <th id="${tableId}-${next.name}" style="${next.style || ' '} white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
             <strong>
               ${formatTableHeader(next.sortField, next.title)}
             </strong>
@@ -99,16 +100,20 @@ function ListCreator() {
             <td class="${next.size} td-checkbox" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
       }
       return prev += `
-          <td class="${next.size}" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
+                <td   class="${next.size}"
+                      ng-dblclick="ctrl.editInline($event, $value, '${next.name}')"
+                      ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }">
+                      ${next.content}
+                </td>
+            `;
     }, ' ')
   }
 
-
-
-  function mountTable(config, className, style) {
+  function mountTable(config, className, style, tableId) {
     if (config.checkbox) {
       config.columnsConfig.unshift({
-        title: `<div class="pure-checkbox">
+        title: `
+              <div class="pure-checkbox">
                   <input type="checkbox"
                          ng-model="ctrl.checkAll"
                          ng-change="ctrl.selectAll(ctrl.checkAll)"
@@ -128,9 +133,35 @@ function ListCreator() {
     }
     return `
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
-        <style ng-if="ctrl.listConfig.materialTheme">${style}</style>
+        <style ng-if="ctrl.listConfig.materialTheme"> {{ctrl.getStyleMaterialDesign()}} </style>
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
-          <div ng-show="(ctrl.listConfig.materialTheme && (ctrl.listConfig.actions.length > 0 || ctrl.listConfig.title))"
+          <div class="page-select"
+              ng-show="ctrl.getPossibleColumns().length > 0"
+              style="position: absolute;right: 35px;z-index: 10;top: 15px;">
+                <div class="btn-group smart-footer-item">
+                  <button class="btn btn-default dropdown-toggle "
+                          data-toggle="dropdown"
+                          type="button"
+                          aria-haspopup="true"
+                          aria-expanded="false" style="font-size: 14px;">
+                          <span class="glyphicon glyphicon-plus"></span>
+                  </button>
+                  <ul class="gmd dropdown-menu" style="margin-left: -120px;margin-top: -20px;">
+                    <li style="border-bottom: 1px solid #ddd;">
+                      <label>Adicionar colunas</label>
+                    </li>
+                    <li class="effect-ripple"
+                        ng-repeat="column in ctrl.getPossibleColumns() track by $index"
+                        ng-click="ctrl.addColumn(column)">
+                        {{column.label || column.name}}
+                    </li>
+                  </ul>
+                </div>
+          </div>
+          <div ng-show="(ctrl.listConfig.materialTheme
+                        && ((ctrl.listConfig.actions.length > 0
+                        || ctrl.listConfig.title)
+                        || ctrl.listConfig.enabledBetweenLines))"
                class="{{ctrl.listConfig.materialTheme ? 'panel-actions': ''}}">
               <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>
               <div class="actions">
@@ -139,6 +170,12 @@ function ListCreator() {
                       style="float: left;padding-left: 15px;"
                       class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"
                       ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>
+
+                <div style="float: left;padding-left: 15px;" ng-show="ctrl.listConfig.enabledBetweenLines">
+                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(25)" style="font-size: 14px;"></i>
+                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(48)" style="font-size: 16px;margin-left: 5px;"></i>
+                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(60)" style="font-size: 20px;margin-left: 5px;"></i>
+                </div>
               </div>
           </div>
           <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'TOP' || ctrl.pagePosition.toUpperCase() == 'ALL')"
@@ -148,17 +185,19 @@ function ListCreator() {
           </div>
           <div class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}" style="padding: 0;">
             <div class="table-responsive" style="{{ctrl.maxHeight ? 'max-height: '+ctrl.maxHeight : ''}}">
-              <table class="${className}">
+
+              <table class="${className}" ${config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' '} id="${tableId}">
                 <thead>
                   <tr>
-                    ${generateHeader(config)}
+                    ${generateHeader(config, tableId)}
                   </tr>
                 </thead>
                 <tbody>
-                <tr ng-style="{ 'border-left': {{ ctrl.conditional($value) }} }"
+                <tr ng-style="{ 'border-left': {{ctrl.conditional($value)}} }"
                     ng-dblclick="ctrl.doubleClick($value)"
                     ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
-                    ng-repeat="$value in ctrl.data track by $index" ng-click="ctrl.select($index,$event)">
+                    ng-repeat="$value in ctrl.data track by $index"
+                    ng-click="ctrl.select($index,$event)">
                     ${generateBody(config.columnsConfig)}
                   </tr>
                 </tbody>
@@ -168,6 +207,7 @@ function ListCreator() {
           <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL')"
                class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}"
                style="justify-content: {{ctrl.pageAlign}};">
+               <div class="signal" ng-show="ctrl.loading"></div>
               ${paginationTemplate}
           </div>
         </div>

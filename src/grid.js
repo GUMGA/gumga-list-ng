@@ -252,6 +252,7 @@
                     elements.each(function (k, element) {
                         var element = angular.element(element);
                         var parent  = angular.element(element).parent();
+                        if(element[0].style.backgroundColor) return;
 
                         var elementBackground = element.css("background-color");
                         elementBackground     = (elementBackground == "transparent" || elementBackground == "rgba(0, 0, 0, 0)") ? null : elementBackground;
@@ -261,8 +262,7 @@
 
                         var background = parentBackground ? parentBackground : "white";
                         background     = elementBackground ? elementBackground : background;
-                        // element.css("background-color", background);
-                        element.css("background-color", "white");
+                        element.css("background-color", background);
                         element.css("touch-action", "manipulation");
                     });
                 }
