@@ -247,8 +247,13 @@ function List($compile, listCreator){
         if(ctrl.listConfig.fixed){
           $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
-        // var resize = new SmartGridResize($element.find('table')[0], {fixed: true});
-        // console.log(resize);
+        if(ctrl.config.ordination){
+          let cache = ctrl.getOrderColumnsStorage();
+          if(cache && ctrl.config.columns != cache){
+            ctrl.config.columns = cache;
+            ctrl.config = angular.copy(ctrl.config);
+          }
+        }
       }
 
       ctrl.getTotalPage = () => {
@@ -384,6 +389,50 @@ function List($compile, listCreator){
       ctrl.getTableId = () => {
         var ramdomId = (window.Math.random().toString());
         return ctrl.name ? 'gumga-list-' + ctrl.name : 'gumga-list-'+ctrl.replaceAll(ramdomId, '.', '');
+      }
+
+      ctrl.moveColumn = (direction, columnName) => {
+        var columns = ctrl.config.columns.replace(/\s/g,'');
+        columns = columns.split(',');
+
+        var columnIndex = columns.indexOf(columnName)
+        switch (direction.toLowerCase()) {
+          case 'left':
+            var columnNameRemove = columns[columnIndex-1]
+            columns[columnIndex-1] = columnName
+            columns[columnIndex] = columnNameRemove
+            break;
+          case 'right':
+            var columnNameRemove = columns[columnIndex+1]
+            columns[columnIndex+1] = columnName
+            columns[columnIndex] = columnNameRemove
+            break;
+        }
+        ctrl.config.columns = columns.toString();
+        ctrl.config = angular.copy(ctrl.config);
+        ctrl.setOrderColumnsStorage(ctrl.config.columns);
+      }
+
+      ctrl.isPosssibleLeft = (columnName, index) => {
+        if(!ctrl.listConfig.ordination) return false;
+        if(columnName == '$checkbox' || index == 0) return false;
+        if(ctrl.listConfig.checkbox && index == 1) return false;
+        return true;
+      }
+
+      ctrl.isPosssibleRight = (columnName, index) => {
+        if(!ctrl.listConfig.ordination) return false;
+        if(columnName == '$checkbox') return false;
+        if(index == ctrl.listConfig.columnsConfig.length-1) return false;
+        return true;
+      }
+
+      ctrl.setOrderColumnsStorage = (columns) => {
+        window.localStorage.setItem('ngColumnOrder.gumga-list-'+ctrl.getTableId(), columns)
+      }
+
+      ctrl.getOrderColumnsStorage = (columns) => {
+        return window.localStorage.getItem('ngColumnOrder.gumga-list-'+ctrl.getTableId());
       }
 
     }

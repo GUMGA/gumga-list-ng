@@ -5,6 +5,32 @@ GUMGA_LIST_KEY table.resize th {
     min-width: 10px !important;
 }
 
+GUMGA_LIST_KEY table th i{
+  display: none;
+}
+
+GUMGA_LIST_KEY table th i.left{
+  font-size: 10px;
+  color: #ccc;
+  position: absolute;
+  left: 5px;
+  top: 18px;
+  cursor: pointer;
+}
+
+GUMGA_LIST_KEY table th i.right{
+  font-size: 10px;
+  color: #ccc;
+  position: absolute;
+  right: 5px;
+  top: 18px;
+  cursor: pointer;
+}
+
+GUMGA_LIST_KEY table th:hover i{
+  display: block;
+}
+
 GUMGA_LIST_KEY table.resize tr th .handle {
     width: 2px;
     height: 100%;

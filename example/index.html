@@ -40,7 +40,7 @@
                       name="pessoa"
                       configuration="tableConfig"
                       page-size="pessoa.pageSize"
-                      class="table-condensed"
+                      class="table-striped"
                       page-position="bottom"
                       page-align="flex-end"
                       count="pessoa.count"
@@ -86,13 +86,15 @@
 
           $scope.tableConfig2 = {
             columns: 'foto, nome, tipoIntegrante, fonePrincipal, button',
-            checkbox: true,
+            checkbox: false,
             resizable: true,
+            ordination: true,
             sortDefault: "nome",
             itemsPerPage: [5,10],
             materialTheme: true,
             fixed: {
-                left: 2
+                head: true,
+                left: 3
             },
             selection: "multi",
             columnsConfig: [
@@ -142,52 +144,53 @@
                 }]
         };
 
-          $scope.tableConfig = {
-            columns: 'id, name, login',
-            itemsPerPage: [5, 10],
-            // enabledBetweenLines: true,
-            // actions: [{icon: '<i class="glyphicon glyphicon-search" aria-hidden="true"></i>'}],
-            checkbox: true,
-            materialTheme: true,
-            resizable: true,
-            fixed: {
-              "head" : true,
-              "left" : 2
+        $scope.tableConfig = {
+          columns: 'id, name, login',
+          itemsPerPage: [5, 10],
+          // enabledBetweenLines: true,
+          // actions: [{icon: '<i class="glyphicon glyphicon-search" aria-hidden="true"></i>'}],
+          // checkbox: true,
+          materialTheme: true,
+          ordination: true,
+          resizable: true,
+          // fixed: {
+          //     head: true,
+          //     left: 2
+          // },
+          selection: "multi",
+          columnsConfig: [
+            {
+              name: 'id',
+              // possibleColumn: true,
+              // possibleColumn: true,
+              title: 'Codigo',
+              content: '{{$value.id}}',
+              sortField: 'id'
             },
-            selection: "multi",
-            columnsConfig: [
-              {
-                name: 'id',
-                // possibleColumn: true,
-                // possibleColumn: true,
-                title: 'Codigo',
-                content: '{{$value.id}}',
-                sortField: 'id'
-              },
-              {
-                name: 'name',
-                editable: true,
-                // possibleColumn: true,
-                // possibleColumn: true,
-                title: 'Nome completo',
-                content: '{{$value.name}}',
-                sortField: 'name'
-              },
-              {
-                name: 'login',
-                title: 'E-mail',
-                content: '{{$value.login}}',
-                sortField: 'login'
-              },
-              {
-                name: 'view',
-                title: 'Ações',
-                content: ' <span class="pull-right"><a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })"><i class="glyphicon glyphicon-eye-open"></i></a></span>'
-              }
-            ]
-          }
-
+            {
+              name: 'name',
+              editable: true,
+              // possibleColumn: true,
+              // possibleColumn: true,
+              title: 'Nome completo',
+              content: '{{$value.name}}',
+              sortField: 'name'
+            },
+            {
+              name: 'login',
+              title: 'E-mail',
+              content: '{{$value.login}}',
+              sortField: 'login'
+            },
+            {
+              name: 'view',
+              title: 'Ações',
+              content: ' <span class="pull-right"><a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })"><i class="glyphicon glyphicon-eye-open"></i></a></span>'
+            }
+          ]
         }
+
+      }
       ])
   </script>
 </body>
