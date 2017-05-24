@@ -971,19 +971,6 @@ function List($compile, listCreator) {
       });
     }
 
-    // Garantindo que existam todos os atributos que podem ser passados via elemento.
-    ctrl.data = ctrl.data || [];
-    ctrl.pageModel = ctrl.pageModel || 1;
-    ctrl.pageAlign = ctrl.pageAlign || "flex-end"; // flex-end, flex-start center
-    ctrl.pagePosition = ctrl.pagePosition ? ctrl.pagePosition : "BOTTOM"; // top , bottom, all
-    ctrl.listConfig = ctrl.listConfig || {};
-    ctrl.sort = hasAttr('sort') ? ctrl.sort : angular.noop;
-    ctrl.class = hasAttr('class') ? defaultCssClass.concat($attrs.class || ' ') : defaultCssClass;
-    ctrl.onClick = hasAttr('onClick') ? ctrl.onClick : angular.noop;
-    ctrl.onDoubleClick = hasAttr('onDoubleClick') ? ctrl.onDoubleClick : angular.noop;
-    ctrl.onSort = hasAttr('onSort') ? ctrl.onSort : angular.noop;
-    ctrl.changePerPage = hasAttr('changePerPage') ? ctrl.changePerPage : angular.noop;
-
     // Garantindo que existam todas as configurações necessárias no objeto.
     function guaranteeConfig() {
       ctrl.listConfig.headers = ctrl.listConfig.hasOwnProperty('headers') ? !!ctrl.listConfig.headers : defaultHeaders;
@@ -995,10 +982,25 @@ function List($compile, listCreator) {
       ctrl.listConfig.columnsConfig = guaranteeColumns(ctrl.listConfig.columns, ctrl.listConfig.columnsConfig);
     }
 
-    // Tratamento de erros do componente.
-    if (!hasAttr('data')) console.error(errorMessages.noData);
-    if (!hasAttr('configuration')) console.error(errorMessages.noConfig);
-    if (!hasConfig('columns')) console.error(errorMessages.noColumns);
+    function init() {
+      // Garantindo que existam todos os atributos que podem ser passados via elemento.
+      ctrl.data = ctrl.data || [];
+      ctrl.pageModel = ctrl.pageModel || 1;
+      ctrl.pageAlign = ctrl.pageAlign || "flex-end"; // flex-end, flex-start center
+      ctrl.pagePosition = ctrl.pagePosition ? ctrl.pagePosition : "BOTTOM"; // top , bottom, all
+      ctrl.listConfig = ctrl.listConfig || {};
+      ctrl.sort = hasAttr('sort') ? ctrl.sort : angular.noop;
+      ctrl.class = hasAttr('class') ? defaultCssClass.concat($attrs.class || ' ') : defaultCssClass;
+      ctrl.onClick = hasAttr('onClick') ? ctrl.onClick : angular.noop;
+      ctrl.onDoubleClick = hasAttr('onDoubleClick') ? ctrl.onDoubleClick : angular.noop;
+      ctrl.onSort = hasAttr('onSort') ? ctrl.onSort : angular.noop;
+      ctrl.changePerPage = hasAttr('changePerPage') ? ctrl.changePerPage : angular.noop;
+
+      // Tratamento de erros do componente.
+      if (!hasAttr('data')) console.error(errorMessages.noData);
+      if (!hasAttr('configuration')) console.error(errorMessages.noConfig);
+      if (!hasConfig('columns')) console.error(errorMessages.noColumns);
+    }
 
     // Variáveis e funções utilizadas pelo componente durante tempo de execução.
     ctrl.selectedValues = [];
@@ -1013,11 +1015,14 @@ function List($compile, listCreator) {
     ctrl.select = select;
     ctrl.selectAll = selectAll;
 
-    if (ctrl.config.sortDefault != null) ctrl.doSort(ctrl.config.sortDefault);
+    if (ctrl.config && ctrl.config.sortDefault && ctrl.config.sortDefault != null) ctrl.doSort(ctrl.config.sortDefault);
 
     $scope.$parent.selectedValues = ctrl.selectedValues;
 
     $scope.$watch('ctrl.config', function (value) {
+      if (!value) return;
+      if (Object.keys(value).length == 0) return;
+      init();
       value.columnsConfig.forEach(function (column) {
         if (column.possibleColumn) {
           value.columns = value.columns.replace(/\s/g, '');
