@@ -196,6 +196,8 @@ function ListCreator() {
                 </thead>
                 <tbody>
                 <tr ng-style="{ 'border-left': {{ctrl.conditional($value)}} }"
+                    style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'opacity: 0.4;' : ''}}"
+                    class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'row-disabled' : ''}}"
                     ng-dblclick="ctrl.doubleClick($value)"
                     ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
                     ng-repeat="$value in ctrl.data track by $index"

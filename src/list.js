@@ -98,6 +98,10 @@ function List($compile, listCreator){
       $scope.$parent.selectedValues = ctrl.selectedValues;
 
       $scope.$watch('ctrl.config', (value) => {
+        applyConfig(value);
+      })
+
+      const applyConfig = value => {
         if(!value) return;
         if(Object.keys(value).length == 0) return;
         init();
@@ -114,7 +118,8 @@ function List($compile, listCreator){
         guaranteeConfig();
         compileElement()
         handlingGrid();
-      })
+        ctrl.loading = false;
+      }
 
       $scope.$watch('ctrl.data', () => {
           updateMap(ctrl.data);
@@ -225,8 +230,17 @@ function List($compile, listCreator){
         ctrl.changePerPage({ value })
       }
 
+      ctrl.rowIsDisabled = (row) => {
+        if(!ctrl.config.disabledRow) return false; //linha não disabilitada
+        var rowIsDisabled = ctrl.config.disabledRow(row);
+        if(typeof(rowIsDisabled) === "boolean"){
+          return rowIsDisabled;
+        }
+        return false;
+      }
+
       function select(index, event = { target: {} }){
-        if (ctrl.listConfig.selection != 'none'){
+        if (ctrl.listConfig.selection != 'none' && !ctrl.rowIsDisabled(ctrl.selectedMap[index].value)){
             if(event.target.name == '$checkbox' && ctrl.listConfig.selection == 'single') uncheckSelectedMap()
             if(event.target.name == '$checkbox' && ctrl.listConfig.selection == 'multi') ctrl.selectedMap[index].checkbox = !ctrl.selectedMap[index].checkbox
             if(ctrl.checkAll) ctrl.checkAll = false
@@ -238,7 +252,11 @@ function List($compile, listCreator){
       }
 
       function selectAll(boolean){
-        Object.keys(ctrl.selectedMap).forEach(value => ctrl.selectedMap[value].checkbox = boolean)
+        Object.keys(ctrl.selectedMap).forEach(value => {
+          if(!ctrl.rowIsDisabled(ctrl.selectedMap[value].value)){
+            ctrl.selectedMap[value].checkbox = boolean;
+          }
+        })
         updateSelectedValues()
       }
 
@@ -256,9 +274,10 @@ function List($compile, listCreator){
         if(ctrl.listConfig.fixed){
           $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
-        if(ctrl.config.ordination){
+        if(ctrl.config.ordination && !ctrl.appyCache){
+          ctrl.appyCache = true;
           let cache = ctrl.getOrderColumnsStorage();
-          if(cache && ctrl.config.columns != cache){
+          if(cache){
             ctrl.config.columns = cache;
             ctrl.config = angular.copy(ctrl.config);
           }
@@ -437,11 +456,11 @@ function List($compile, listCreator){
       }
 
       ctrl.setOrderColumnsStorage = (columns) => {
-        window.localStorage.setItem('ngColumnOrder.gumga-list-'+ctrl.getTableId(), columns)
+        window.sessionStorage.setItem('ngColumnOrder.gumga-list-'+ctrl.getTableId(), columns)
       }
 
       ctrl.getOrderColumnsStorage = (columns) => {
-        return window.localStorage.getItem('ngColumnOrder.gumga-list-'+ctrl.getTableId());
+        return window.sessionStorage.getItem('ngColumnOrder.gumga-list-'+ctrl.getTableId());
       }
 
     }

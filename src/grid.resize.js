@@ -259,7 +259,7 @@ angular.module("ngSmartGridResize").service('resizeStorage', ['$window', functio
 
     this.loadTableSizes = function(table, model) {
         var key = getStorageKey(table, model);
-        var object = $window.localStorage.getItem(key);
+        var object = $window.sessionStorage.getItem(key);
         return JSON.parse(object);
     }
 
@@ -267,7 +267,7 @@ angular.module("ngSmartGridResize").service('resizeStorage', ['$window', functio
         var key = getStorageKey(table, model);
         if (!key) return;
         var string = JSON.stringify(sizes);
-        $window.localStorage.setItem(key, string)
+        $window.sessionStorage.setItem(key, string)
     }
 
     function getStorageKey(table, mode) {
@@ -296,9 +296,9 @@ angular.module("ngSmartGridResize").factory("ResizerModel", [function() {
 
     ResizerModel.prototype.setup = function() {
         // Hide overflow by default
-        $(this.container).css({
-            overflowX: 'hidden'
-        })
+        // $(this.container).css({
+        //     overflowX: 'hidden'
+        // })
     }
 
     ResizerModel.prototype.onTableReady = function () {
@@ -383,9 +383,9 @@ angular.module("ngSmartGridResize").factory("BasicResizer", ["ResizerModel", fun
 
     BasicResizer.prototype.setup = function() {
         // Hide overflow in mode fixed
-        $(this.container).css({
-            overflowX: 'hidden'
-        })
+        // $(this.container).css({
+        //     overflowX: 'hidden'
+        // })
 
         // First column is auto to compensate for 100% table width
         $(this.columns).first().css({
@@ -444,9 +444,9 @@ angular.module("ngSmartGridResize").factory("FixedResizer", ["ResizerModel", fun
 
     FixedResizer.prototype.setup = function() {
         // Hide overflow in mode fixed
-        $(this.container).css({
-            overflowX: 'hidden'
-        })
+        // $(this.container).css({
+        //     overflowX: 'hidden'
+        // })
 
         // First column is auto to compensate for 100% table width
         $(this.columns).first().css({

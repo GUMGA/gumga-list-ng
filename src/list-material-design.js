@@ -212,6 +212,7 @@ GUMGA_LIST_KEY .btn-default.active.focus, .btn-default.active:focus, .btn-defaul
 GUMGA_LIST_KEY .smart-footer-item ul{
   margin-top: -32px;
   width: 136px !important;
+  max-width: 136px !important;
   min-height: 48px;
   max-height: 256px;
   overflow-y: auto;
