@@ -1164,7 +1164,9 @@ function List($compile, listCreator) {
       ctrl.activeSorted.column = sortField;
       ctrl.activeSorted.direction = ctrl.activeSorted.direction == 'asc' ? 'desc' : 'asc';
       ctrl.sort({ field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction, pageSize: ctrl.pageSize });
-      ctrl.onSort({ field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction, pageSize: ctrl.pageSize });
+      if (ctrl.onSort) {
+        ctrl.onSort({ field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction, pageSize: ctrl.pageSize });
+      }
     }
 
     function doubleClick($value) {
