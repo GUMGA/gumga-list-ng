@@ -9,6 +9,10 @@ GUMGA_LIST_KEY table th i{
   display: none;
 }
 
+GUMGA_LIST_KEY table td[contenteditable="true"]{
+  border: 1px solid #175bc1;
+}
+
 GUMGA_LIST_KEY table th i.left{
   font-size: 10px;
   color: #ccc;
@@ -111,16 +115,19 @@ GUMGA_LIST_KEY .table>thead>tr>th{
 /**
   START PERSONALIZE ROWS
 **/
-GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed, GUMGA_LIST_KEY .table>tbody>tr:hover{
-  -webkit-transition: background-color 300ms linear;
-  -ms-transition: background-color 300ms linear;
-  transition: background-color 300ms linear;
-  background: #f5f5f5 !important;
+GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed,
+GUMGA_LIST_KEY .table>tbody>tr:hover,
+GUMGA_LIST_KEY .table>tbody>tr:hover GUMGA_LIST_KEY tr.active > td{
+
+  background: HOVER_ROW_COLOR !important;
 }
 
-GUMGA_LIST_KEY .active-list .smart-grid-fixed {
-  background: #f5f5f5 !important;
+GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed{
+  -webkit-transition: background-color 90ms linear;
+  -ms-transition: background-color 90ms linear;
+  transition: background-color 90ms linear;
 }
+
 
 /**
   END PERSONALIZE ROWS
@@ -183,9 +190,17 @@ GUMGA_LIST_KEY .panel .panel-body{
   margin: 0 !important;
 }
 
-GUMGA_LIST_KEY .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active{
-  background: #f5f5f5 !important;
+GUMGA_LIST_KEY .table>tbody>tr.active>td,
+GUMGA_LIST_KEY .table>tbody>tr.active>th{
+
+  background: ACTIVE_ROW_COLOR !important;
 }
+
+GUMGA_LIST_KEY .table>tbody>tr.active:hover>td,
+GUMGA_LIST_KEY .table>tbody>tr.active>:hover > th{
+  background: HOVER_ROW_COLOR !important;
+}
+
 
 GUMGA_LIST_KEY .smart-footer-item button{
   border: none !important;

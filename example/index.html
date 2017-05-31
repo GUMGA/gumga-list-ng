@@ -10,20 +10,7 @@
     crossorigin="anonymous">
     <link rel="stylesheet" href="https://gumga.github.io/layout/dist/gumga-layout.css">
 
-    <style media="screen">
-      body{
-        background: #f5f5f5;
-      }
-      .disponivel{
-        color: red !important;
-      }
-      .nao-disponivel:hover{
-        color: red !important;
-      }
-      html {
-        touch-action: manipulation;
-      }
-    </style>
+
 </head>
 
 <body ng-controller="manyToOneCtrl" >
@@ -54,6 +41,21 @@
     </form>
   </div>
 
+  <style media="screen">
+    body{
+      background: #f5f5f5;
+    }
+    .disponivel{
+      color: red !important;
+    }
+    .nao-disponivel:hover{
+      color: red !important;
+    }
+    html {
+      touch-action: manipulation;
+    }
+  </style>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -74,26 +76,25 @@
           var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
           // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
-          gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
+        gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-          // $scope.page = 1;
 
-          $scope.pessoa.methods.get($scope.page, 10);
+        $scope.pessoa.methods.get($scope.page, 10);
 
-          $scope.mudar = function(row){
-            console.log('Editado inline --> ', row);
-          }
+        $scope.mudar = function(row){
+          console.log('Editado inline --> ', row);
+        }
 
         $scope.tableConfig = {
           columns: 'id, name, login',
           itemsPerPage: [5, 10],
-          // enabledBetweenLines: true,
-          // actions: [{icon: '<i class="glyphicon glyphicon-search" aria-hidden="true"></i>'}],
           checkbox: true,
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
           },
           materialTheme: true,
+          // activeLineColor: 'red',
+          // hoverLineColor: 'red',
           ordination: true,
           resizable: true,
           fixed: {

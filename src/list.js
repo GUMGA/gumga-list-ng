@@ -122,6 +122,7 @@ function List($compile, listCreator){
       }
 
       $scope.$watch('ctrl.data', () => {
+          if(ctrl.updatingRow) return;
           updateMap(ctrl.data);
           handlingGrid();
           ctrl.loading = false;
@@ -134,7 +135,7 @@ function List($compile, listCreator){
       function findEqualInMap(obj = {}){
         const auxObj = ctrl.selectedMap
         for(var key in auxObj) if(auxObj.hasOwnProperty(key) && angular.equals(obj, auxObj[key].value)) return auxObj[key]
-        return false
+        return false;
       }
 
       function findEqualInSelected(obj = {}) {
@@ -355,6 +356,10 @@ function List($compile, listCreator){
          }else{
            s = ctrl.replaceAll(s, 'GUMGA_LIST_KEY', 'gumga-list');
          }
+         var activeLineColor = ctrl.listConfig.activeLineColor || '#f5f5f5';
+         var hoverLineColor = ctrl.listConfig.hoverLineColor || activeLineColor;
+         s = ctrl.replaceAll(s, 'ACTIVE_ROW_COLOR', (activeLineColor));
+         s = ctrl.replaceAll(s, 'HOVER_ROW_COLOR', hoverLineColor);
          return s;
       }
 
@@ -367,38 +372,47 @@ function List($compile, listCreator){
         var columnConfig = ctrl.listConfig.columnsConfig.filter(val => val.name == column)[0];
         if(columnConfig && columnConfig.editable){
           ev.stopPropagation();
+          angular.element(ev.target).attr('contenteditable', true)
           var value = angular.element(ev.target).html();
           ctrl.updateVal(ev.target, row, column, value.trim());
         }
       }
 
       ctrl.rowUpdate = (ev, currentEle, row, column) => {
-          let newValue = angular.element(ev.target).val().trim();
-          angular.element(currentEle).html(newValue);
-          row[column] = newValue;
+          var rowModified = angular.copy(row);
+          angular.element(ev.target).attr('contenteditable', false);
+          if(ctrl.updatingRow) return;
+          ctrl.updatingRow = true;
+          let newValue = angular.element(ev.target).text().trim();
+          rowModified[column] = newValue;
           if(!ctrl.onRowChange){
             throw "O gumga-list precisa que você informe o atributo on-row-change para saber quando os registros forem alterados.";
           }
-          ctrl.onRowChange({row: row});
+          ctrl.onRowChange({row: rowModified});
+          $timeout(function () {
+            ctrl.updatingRow = false;
+          }, 100);
       }
 
       ctrl.updateVal = (currentEle, row, column, value) => {
-        angular.element(currentEle)
-               .html('<input class="input-inline-edit" type="text" value="' + value + '" />');
-        let input = angular.element(currentEle).find('input');
-            input.focus();
-            input.select();
-            input.keyup((ev)=> {
-              if (ev.keyCode == 13) {
-                  ctrl.rowUpdate(ev, currentEle, row, column);
-              }
-            });
-            input.blur((ev) => {
-                  ctrl.rowUpdate(ev, currentEle, row, column);
-            });
-            input.click(function(e) {
-                    e.stopPropagation();
-                  });
+        currentEle.focus();
+        $timeout(()=>{
+          angular.element(currentEle).select();
+        }, 10)
+        angular.element(currentEle).keydown((ev)=> {
+          if (ev.keyCode == 13) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            ctrl.rowUpdate(ev, currentEle, row, column);
+            return false;
+          }
+        });
+        angular.element(currentEle).blur((ev) => {
+            ctrl.rowUpdate(ev, currentEle, row, column);
+        });
+        angular.element(currentEle).click(function(e) {
+             e.stopPropagation();
+        });
       }
 
       ctrl.getPossibleColumns = () => {
