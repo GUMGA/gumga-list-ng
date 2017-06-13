@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width">
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
-    <link rel="stylesheet" href="https://gumga.github.io/layout/dist/gumga-layout.css">
+    <!-- <link rel="stylesheet" href="https://gumga.github.io/layout/dist/gumga-layout.css"> -->
 
 
 </head>
@@ -19,6 +19,7 @@
       <br>
       <br>
       <br>
+
       <!-- {{mateus}} -->
       <div class="col-md-12">
         <div class="col-md-12">
@@ -32,9 +33,9 @@
                       page-align="flex-end"
                       count="pessoa.count"
                       page-model="page"
-                      on-row-change="mudar(row)"
                       on-page-change="pessoa.methods.get(page, pageSize)"
             ></gumga-list>
+
         </div>
       </div>
 
@@ -59,10 +60,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="../node_modules/angular/angular.min.js"></script>
-  <script src="../node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
-  <script src="../node_modules/gumga-controller-ng/dist/gumga-controller.min.js"></script>
-  <script src="../dist/gumga-list.js"></script>
+  <script src="node_modules/angular/angular.min.js"></script>
+  <script src="node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
+  <script src="node_modules/gumga-controller-ng/dist/gumga-controller.min.js"></script>
+  <script src="dist/gumga-list.js"></script>
 
   <script>
     angular.module('yourApp', ['gumga.rest','gumga.controller','gumga.list'])
@@ -78,16 +79,12 @@
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-
         $scope.pessoa.methods.get($scope.page, 10);
 
-        $scope.mudar = function(row){
-          console.log('Editado inline --> ', row);
-        }
 
         $scope.tableConfig = {
           columns: 'id, name, login',
-          itemsPerPage: [5, 10],
+          // itemsPerPage: [5, 10],
           checkbox: true,
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
@@ -105,7 +102,7 @@
           columnsConfig: [
             {
               name: 'id',
-              // possibleColumn: true,
+              possibleColumn: true,
               title: 'Codigo',
               content: '{{$value.id}}',
               sortField: 'id'

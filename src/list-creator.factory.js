@@ -57,8 +57,8 @@ function ListCreator() {
         <div class="page-select">
           <div class="smart-footer-item">
             {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}
-            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="glyphicon glyphicon-chevron-left"></i></button>
-            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="glyphicon glyphicon-chevron-right"></i></button>
+            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="effect-ripple glyphicon glyphicon-chevron-left"></i></button>
+            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="effect-ripple glyphicon glyphicon-chevron-right"></i></button>
           </div>
         </div>
   `;
@@ -208,8 +208,8 @@ function ListCreator() {
               </table>
             </div>
           </div>
-          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL')"
-               class="{{ctrl.listConfig.materialTheme ? 'panel-footer': ''}}"
+          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL')"
+               class="{{ctrl.listConfig.materialTheme ? 'panel-footer gumga-list-paginable': ''}}"
                style="justify-content: {{ctrl.pageAlign}};">
                <div class="signal" ng-show="ctrl.loading"></div>
               ${paginationTemplate}
