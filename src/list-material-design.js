@@ -88,13 +88,16 @@ GUMGA_LIST_KEY .panel-actions{
   flex-wrap: wrap-reverse;
   box-sizing: border-box;
   font-size: 12px;
-  color: rgba(0,0,0,.54);
-  border-top: 1px rgba(0,0,0,.12) solid;
+  color: rgba(0,0,0,.87);
   background-color: #fff;
   padding: 10px 24px;
   display: flex;
   padding-top: 0;
   padding-bottom: 0;
+  height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 GUMGA_LIST_KEY .panel-actions .actions{
@@ -363,7 +366,7 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"], .pure-radiobutton input[ty
 }
 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:focus + label:before, .pure-radiobutton input[type="checkbox"]:focus + label:before, .pure-checkbox input[type="radio"]:focus + label:before, .pure-radiobutton input[type="radio"]:focus + label:before, .pure-checkbox input[type="checkbox"]:hover + label:before, .pure-radiobutton input[type="checkbox"]:hover + label:before, .pure-checkbox input[type="radio"]:hover + label:before, .pure-radiobutton input[type="radio"]:hover + label:before {
-  border-color: #4f8196;
+  border-color: CHECKBOX_COLOR;
   background-color: #f2f2f2;
 }
 
@@ -380,14 +383,14 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label, .pure-radiobutton 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:before, .pure-radiobutton input[type="checkbox"] + label:before, .pure-checkbox input[type="radio"] + label:before, .pure-radiobutton input[type="radio"] + label:before {
   box-sizing: content-box;
   content: '';
-  color: #4f8196;
+  color: CHECKBOX_COLOR;
   position: absolute;
   top: 50%;
   left: 0;
   width: 14px;
   height: 14px;
   margin-top: -9px;
-  border: 2px solid #4f8196;
+  border: 2px solid CHECKBOX_COLOR;
   text-align: center;
   transition: all 0.4s ease;
 }
@@ -395,7 +398,7 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:before, .pure-radio
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:after, .pure-radiobutton input[type="checkbox"] + label:after, .pure-checkbox input[type="radio"] + label:after, .pure-radiobutton input[type="radio"] + label:after {
   box-sizing: content-box;
   content: '';
-  background-color: #4f8196;
+  background-color: CHECKBOX_COLOR;
   position: absolute;
   top: 50%;
   left: 4px;
@@ -449,14 +452,14 @@ GUMGA_LIST_KEY .pure-checkbox input[type="radio"] + label:before, .pure-radiobut
 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:before, .pure-radiobutton input[type="checkbox"]:checked + label:before {
   animation: borderscale 200ms ease-in;
-  background: #4f8196;
+  background: CHECKBOX_COLOR;
 }
 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after { transform: rotate(-45deg) scale(1); }
 
 @keyframes
 borderscale {  50% {
- box-shadow: 0 0 0 2px #4f8196;
+ box-shadow: 0 0 0 2px CHECKBOX_COLOR;
 }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "gumga-list-ng",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Gumga List",
   "main": "./src/list.js",
   "authors": [

@@ -113,15 +113,14 @@ angular.module('yourApp', ['gumga.list']);
   columnsConfig: [
     {
       name: 'id',
-      // possibleColumn: true,
+      // possibleColumn: true, //diz que essa coluna é uma possivél coluna, so vai ser adicionada pelo usuário
       title: 'Codigo',
       content: '{{$value.id}}',
       sortField: 'id'
     },
     {
       name: 'name',
-      editable: true,
-      // possibleColumn: true,
+      editable: true, // habilita a edição da coluna para editar o registro
       title: 'Nome completo',
       content: '{{$value.name}}',
       sortField: 'name'

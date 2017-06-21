@@ -8,8 +8,8 @@
   <meta name="viewport" content="width=device-width">
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
-    <!-- <link rel="stylesheet" href="https://gumga.github.io/layout/dist/gumga-layout.css"> -->
 
+  <link rel="stylesheet" href="https://gumga.github.io/layout/gumga-layout/gumga-layout.css"/>
 
 </head>
 
@@ -23,8 +23,7 @@
       <!-- {{mateus}} -->
       <div class="col-md-12">
         <div class="col-md-12">
-          <gumga-list sort="pessoa.methods.sort(field, dir, pageSize)"
-                      data="pessoa.data"
+          <gumga-list data="pessoa.data"
                       selected-values="mateus"
                       name="pessoa"
                       configuration="tableConfig"
@@ -33,6 +32,7 @@
                       page-align="flex-end"
                       count="pessoa.count"
                       page-model="page"
+                      on-row-change="update(row)"
                       on-page-change="pessoa.methods.get(page, pageSize)"
             ></gumga-list>
 
@@ -79,17 +79,26 @@
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-        $scope.pessoa.methods.get($scope.page, 10);
+        $scope.pessoa.methods.getLatestOperation();
 
+        $scope.update = function(){}
 
         $scope.tableConfig = {
           columns: 'id, name, login',
-          // itemsPerPage: [5, 10],
+          itemsPerPage: [5, 10],
           checkbox: true,
+          // title: 'Listagem de usuários',
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
           },
+          actions: [{
+            icon: '<button class="btn btn gmd" aria-hidden="true">Apenas os lindos</button>',
+            onClick: function(p1, p2){
+              $scope.pessoa.methods.search('name', 'Mateus');
+            }
+          }],
           materialTheme: true,
+          // checkboxColor: 'red',
           // activeLineColor: 'red',
           // hoverLineColor: 'red',
           ordination: true,
@@ -102,7 +111,6 @@
           columnsConfig: [
             {
               name: 'id',
-              possibleColumn: true,
               title: 'Codigo',
               content: '{{$value.id}}',
               sortField: 'id'
@@ -110,7 +118,6 @@
             {
               name: 'name',
               editable: true,
-              // possibleColumn: true,
               title: 'Nome completo',
               content: '{{$value.name}}',
               sortField: 'name'

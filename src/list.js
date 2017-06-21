@@ -1,6 +1,6 @@
-require('./list-creator.factory.js')
-require('./grid.js')
-require('./grid.resize.js')
+require('./list-creator.factory.js');
+require('./grid.js');
+require('./grid.resize.js');
 
 import style from './list-material-design';
 
@@ -78,7 +78,6 @@ function List($compile, listCreator){
         if(!hasAttr('configuration'))    console.error(errorMessages.noConfig)
         if(!hasConfig('columns'))        console.error(errorMessages.noColumns)
       }
-
 
       // Variáveis e funções utilizadas pelo componente durante tempo de execução.
       ctrl.selectedValues       = []
@@ -230,7 +229,9 @@ function List($compile, listCreator){
       }
 
       function changePerPage(value){
-        ctrl.changePerPage({ value })
+        if(ctrl.changePerPage){
+          ctrl.changePerPage({ value })
+        }
       }
 
       ctrl.rowIsDisabled = (row) => {
@@ -274,6 +275,8 @@ function List($compile, listCreator){
       } catch(err){}
 
       const handlingGrid = () => {
+        if(!ctrl.listConfig) return;
+
         if(ctrl.listConfig.fixed){
           $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
@@ -356,10 +359,12 @@ function List($compile, listCreator){
          }else{
            s = ctrl.replaceAll(s, 'GUMGA_LIST_KEY', 'gumga-list');
          }
+         var checkboxColor = ctrl.listConfig.checkboxColor || '#4f8196';
          var activeLineColor = ctrl.listConfig.activeLineColor || '#f5f5f5';
          var hoverLineColor = ctrl.listConfig.hoverLineColor || activeLineColor;
-         s = ctrl.replaceAll(s, 'ACTIVE_ROW_COLOR', (activeLineColor));
+         s = ctrl.replaceAll(s, 'ACTIVE_ROW_COLOR', activeLineColor);
          s = ctrl.replaceAll(s, 'HOVER_ROW_COLOR', hoverLineColor);
+         s = ctrl.replaceAll(s, 'CHECKBOX_COLOR', checkboxColor);
          return s;
       }
 
