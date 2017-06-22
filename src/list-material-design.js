@@ -331,7 +331,7 @@ GUMGA_LIST_KEY td[class*="td-checkbox"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[cl
   padding: 0px 0px 0px 24px !important;
   color: rgba(0,0,0,.87) !important;
   font-size: 13px !important;
-  border-top: 1px rgba(0,0,0,.12) solid;
+  border-top: 1px solid rgba(168, 159, 159, 0.12);
   vertical-align: middle;
 }
 

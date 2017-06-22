@@ -264,6 +264,8 @@
                         background     = elementBackground ? elementBackground : background;
                         element.css("background-color", background);
                         element.css("touch-action", "manipulation");
+                        element.css("border-top", "1px solid rgba(168, 159, 159, 0.12)");
+                        element.css("background-clip", "padding-box");
                     });
                 }
 
