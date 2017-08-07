@@ -5,6 +5,25 @@ GUMGA_LIST_KEY table.resize th {
     min-width: 10px !important;
 }
 
+/**
+  START PERSONALIZE ROWS
+**/
+
+GUMGA_LIST_KEY tr td, GUMGA_LIST_KEY tr th{
+  background-color: #FFFFFF;
+  border-top: 1px solid rgba(168, 159, 159, 0.12);
+}
+
+GUMGA_LIST_KEY tr:hover td{
+  background-color: HOVER_ROW_COLOR;
+  border-top: 1px solid rgba(168, 159, 159, 0.12);
+}
+
+/**
+  END PERSONALIZE ROWS
+**/
+
+
 GUMGA_LIST_KEY table th i{
   display: none;
 }
@@ -63,7 +82,7 @@ GUMGA_LIST_KEY .table{
 
 GUMGA_LIST_KEY tr{
   transition: background-color .2s;
-  height: LINE_HEIGHT_VALUE !important;
+  height: LINE_HEIGHT_VALUE;
   font-family: Roboto,"Helvetica Neue",sans-serif;
 }
 
@@ -115,26 +134,6 @@ GUMGA_LIST_KEY .table>thead>tr>th{
   vertical-align: middle !important;
 }
 
-/**
-  START PERSONALIZE ROWS
-**/
-GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed,
-GUMGA_LIST_KEY .table>tbody>tr:hover,
-GUMGA_LIST_KEY .table>tbody>tr:hover GUMGA_LIST_KEY tr.active > td{
-
-  background: HOVER_ROW_COLOR !important;
-}
-
-GUMGA_LIST_KEY .table>tbody>tr:hover .smart-grid-fixed{
-  -webkit-transition: background-color 90ms linear;
-  -ms-transition: background-color 90ms linear;
-  transition: background-color 90ms linear;
-}
-
-
-/**
-  END PERSONALIZE ROWS
-**/
 
 .effect-ripple {
   position: relative;
@@ -348,11 +347,6 @@ GUMGA_LIST_KEY tr td < span:nth-child(n+10) {
 GUMGA_LIST_KEY .table-responsive{
   border: none;
 }
-
-GUMGA_LIST_KEY .smart-grid-fixed{
-  /*border-: #f5f5f5 !important;*/
-}
-
 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"], .pure-radiobutton input[type="checkbox"], .pure-checkbox input[type="radio"], .pure-radiobutton input[type="radio"] {
   border: 0;

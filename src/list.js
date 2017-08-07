@@ -243,6 +243,15 @@ function List($compile, listCreator){
         return false;
       }
 
+      ctrl.checkConditions = (row) => {
+        if(!ctrl.listConfig.conditionalClass) return "";
+        var rowClass = ctrl.listConfig.conditionalClass(row);
+        if(rowClass && typeof rowClass == "object"){
+          return rowClass;
+        }
+        return "";
+      }
+
       function select(index, event = { target: {} }){
         if (ctrl.listConfig.selection != 'none' && !ctrl.rowIsDisabled(ctrl.selectedMap[index].value)){
             if(event.target.name == '$checkbox' && ctrl.listConfig.selection == 'single') uncheckSelectedMap()
@@ -271,14 +280,13 @@ function List($compile, listCreator){
         $element.append($compile(element)($scope))
       }
       try {
-        compileElement()
+        compileElement();
       } catch(err){}
 
       const handlingGrid = () => {
         if(!ctrl.listConfig) return;
-
         if(ctrl.listConfig.fixed){
-          $timeout(()=>$element.find('table').smartGrid(ctrl.listConfig.fixed));
+          $timeout(() => $element.find('table').smartGrid(ctrl.listConfig.fixed));
         }
         if(ctrl.config.ordination && !ctrl.appyCache){
           ctrl.appyCache = true;
@@ -374,6 +382,9 @@ function List($compile, listCreator){
       }
 
       ctrl.editInline = (ev, row, column) => {
+        if(ctrl.rowIsDisabled(row)){
+          return;
+        }
         var columnConfig = ctrl.listConfig.columnsConfig.filter(val => val.name == column)[0];
         if(columnConfig && columnConfig.editable){
           ev.stopPropagation();
@@ -509,6 +520,7 @@ function List($compile, listCreator){
       },
       bindToController: true,
       controllerAs: 'ctrl',
+      transclude: true,
       controller
     }
 }

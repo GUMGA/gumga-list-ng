@@ -97,6 +97,11 @@ angular.module('yourApp', ['gumga.list']);
   disabledRow: function(row){
     return row.id == 3 // desabilita linhas
   },
+  conditionalClass: function(row){
+    return {
+      "inativo": row.id == 3 //APLICA CLASSES NA LINHA.
+    }
+  },
   materialTheme: true, //usar tema de material design
   // activeLineColor: 'red', // cor da linha selecionada
   // hoverLineColor: 'red', // cor da linha ao passar o mouse.

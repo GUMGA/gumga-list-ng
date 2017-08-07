@@ -91,7 +91,8 @@ function ListCreator() {
               ${formatTableHeader(next.sortField, next.title)}
             </strong>
             <i ng-show="ctrl.isPosssibleRight('${next.name}', ${index})" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn('right', '${next.name}')"></i>
-          </th>`
+          </th>
+          `
     }, ' ')
   }
 
@@ -99,10 +100,11 @@ function ListCreator() {
     return columnsArray.reduce((prev, next) => {
       if(next.name == "$checkbox"){
         return prev += `
-            <td class="${next.size} td-checkbox" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
+            <td class="${next.size} td-checkbox" ng-class="ctrl.checkConditions($value)" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
       }
       return prev += `
                 <td   class="${next.size}"
+                      ng-class="ctrl.checkConditions($value)"
                       ng-dblclick="ctrl.editInline($event, $value, '${next.name}')"
                       ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }">
                       ${next.content}
@@ -195,14 +197,14 @@ function ListCreator() {
                   </tr>
                 </thead>
                 <tbody>
-                <tr ng-style="{ 'border-left': {{ctrl.conditional($value)}} }"
-                    style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'opacity: 0.4;' : ''}}"
-                    class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'row-disabled' : ''}}"
-                    ng-dblclick="ctrl.doubleClick($value)"
-                    ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
-                    ng-repeat="$value in ctrl.data track by $index"
-                    ng-click="ctrl.select($index,$event)">
-                    ${generateBody(config.columnsConfig)}
+                  <tr ng-style="{ 'border-left': {{ctrl.conditional($value)}} }"
+                      style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'opacity: 0.4;' : ''}}"
+                      class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'row-disabled' : ''}} "
+                      ng-dblclick="ctrl.doubleClick($value)"
+                      ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
+                      ng-repeat="$value in ctrl.data track by $index"
+                      ng-click="ctrl.select($index,$event)">
+                      ${generateBody(config.columnsConfig)}
                   </tr>
                 </tbody>
               </table>

@@ -11,20 +11,27 @@
 
   <link rel="stylesheet" href="https://gumga.github.io/layout/gumga-layout/gumga-layout.css"/>
 
+  <style media="screen">
+    gumga-list[name="pessoa"] tr td.inativo{
+      background: red;
+    }
+  </style>
+
 </head>
 
 <body ng-controller="manyToOneCtrl" >
+  <!-- <button type="button" ng-disabled="selectedValues.length == 0">
+       teste
+  </button> -->
   <div class="gumga-layout">
     <form name="Example">
       <br>
       <br>
       <br>
 
-      <!-- {{mateus}} -->
       <div class="col-md-12">
         <div class="col-md-12">
           <gumga-list data="pessoa.data"
-                      selected-values="mateus"
                       name="pessoa"
                       configuration="tableConfig"
                       page-size="pessoa.pageSize"
@@ -32,9 +39,10 @@
                       page-align="flex-end"
                       count="pessoa.count"
                       page-model="page"
+                      sort="sortCustom(page, pessoa.pageSize, field, dir)"
                       on-row-change="update(row)"
-                      on-page-change="pessoa.methods.get(page, pageSize)"
-            ></gumga-list>
+                      on-page-change="pessoa.methods.get(page, pageSize)">
+          </gumga-list>
 
         </div>
       </div>
@@ -74,6 +82,7 @@
       })
       .controller('manyToOneCtrl', ['GumgaRest','gumgaController','$scope', '$http',
         function (GumgaRest,gumgaController,$scope, $http) {
+
           var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
           // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
@@ -83,6 +92,22 @@
 
         $scope.update = function(){}
 
+        $scope.sortCustom = function(page, pageSize, field, dir){
+            var request = {
+              pageSize: pageSize,
+              start: (page-1) * pageSize,
+              sortDir: dir,
+              sortField: field,
+              aq: "obj.name like '%Ma%'"
+            }
+            $http.get('https://gumga.io/security-api/api/user?gumgaToken=eterno', { params: request })
+              .then(function(resp){
+                $scope.pessoa.pageSize = resp.data.pageSize;
+                $scope.pessoa.count     = resp.data.count;
+                $scope.pessoa.data     = resp.data.values;
+              })
+        }
+
         $scope.tableConfig = {
           columns: 'id, name, login',
           itemsPerPage: [5, 10],
@@ -91,12 +116,11 @@
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
           },
-          actions: [{
-            icon: '<button class="btn btn gmd" aria-hidden="true">Apenas os lindos</button>',
-            onClick: function(p1, p2){
-              $scope.pessoa.methods.search('name', 'Mateus');
+          conditionalClass: function(row){
+            return {
+              "inativo": row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
             }
-          }],
+          },
           materialTheme: true,
           // checkboxColor: 'red',
           // activeLineColor: 'red',
@@ -104,7 +128,6 @@
           ordination: true,
           resizable: true,
           fixed: {
-              head: true,
               left: 2
           },
           selection: "multi",
@@ -113,7 +136,7 @@
               name: 'id',
               title: 'Codigo',
               content: '{{$value.id}}',
-              sortField: 'id'
+              // sortField: 'id'
             },
             {
               name: 'name',
@@ -126,12 +149,16 @@
               name: 'login',
               title: 'E-mail',
               content: '{{$value.login}}',
-              sortField: 'login'
+              // sortField: 'login'
             },
             {
               name: 'view',
               title: 'Ações',
-              content: ' <span class="pull-right"><a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })"><i class="glyphicon glyphicon-eye-open"></i></a></span>'
+              content: '<span class="pull-right">'+
+              '<a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })">' +
+              '   <i class="glyphicon glyphicon-eye-open"></i>'+
+              '</a>'+
+              '</span>'
             }
           ]
         }
