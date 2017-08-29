@@ -276,7 +276,7 @@ function List($compile, listCreator){
       // Compilação do componente na tela.
       function compileElement() {
         $element.html('')
-        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style, ctrl.getTableId()))
+        const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style, ctrl.getTableId(), ctrl.getStyleMaterialDesign(), ctrl.name))
         $element.append($compile(element)($scope))
       }
       try {

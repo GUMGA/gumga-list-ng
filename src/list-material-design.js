@@ -2,7 +2,7 @@ export default `
 
 GUMGA_LIST_KEY table.resize th {
     position: relative;
-    min-width: 10px !important;
+    min-width: 10px ;
 }
 
 /**
@@ -60,7 +60,7 @@ GUMGA_LIST_KEY table.resize tr th .handle {
     position: absolute;
     top: 0;
     right: 0px;
-    cursor: ew-resize !important;
+    cursor: ew-resize ;
     background: #f3f3f3;
 }
 
@@ -130,8 +130,8 @@ GUMGA_LIST_KEY .panel-actions .actions i,  GUMGA_LIST_KEY .panel-actions .action
 }
 
 GUMGA_LIST_KEY .table>thead>tr>th{
-  border: none !important;
-  vertical-align: middle !important;
+  border: none ;
+  vertical-align: middle ;
 }
 
 
@@ -189,24 +189,24 @@ GUMGA_LIST_KEY .signal {
 }
 
 GUMGA_LIST_KEY .panel .panel-body{
-  margin: 0 !important;
+  margin: 0 ;
 }
 
 GUMGA_LIST_KEY .table>tbody>tr.active>td,
 GUMGA_LIST_KEY .table>tbody>tr.active>th{
-
-  background: ACTIVE_ROW_COLOR !important;
+   background: ACTIVE_ROW_COLOR;
+   border: none;
 }
 
 GUMGA_LIST_KEY .table>tbody>tr.active:hover>td,
 GUMGA_LIST_KEY .table>tbody>tr.active>:hover > th{
-  background: HOVER_ROW_COLOR !important;
+  background: HOVER_ROW_COLOR ;
 }
 
 
 GUMGA_LIST_KEY .smart-footer-item button{
-  border: none !important;
-  outline: none !important;
+  border: none ;
+  outline: none ;
   background: #fff;
   color: rgba(0,0,0,.54);
   font-size: 13px;
@@ -216,7 +216,7 @@ GUMGA_LIST_KEY .smart-footer-item button{
 
 GUMGA_LIST_KEY .smart-footer-item > button:hover, GUMGA_LIST_KEY .smart-footer-item > button:active{
   background: #fff;
-  outline: none !important;
+  outline: none ;
   color: #000000;
   box-shadow: none;
 }
@@ -228,16 +228,16 @@ GUMGA_LIST_KEY .btn-default.active.focus, .btn-default.active:focus, .btn-defaul
 
 GUMGA_LIST_KEY .smart-footer-item ul{
   margin-top: -32px;
-  width: 136px !important;
-  max-width: 136px !important;
+  width: 136px;
+  max-width: 136px;
   min-height: 48px;
   max-height: 256px;
   overflow-y: auto;
   padding: 0;
-  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12)!important;
-  transition: all .4s cubic-bezier(.25,.8,.25,1)!important;
-  border-radius: 2px!important;
-  border: none!important;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
+  transition: all .4s cubic-bezier(.25,.8,.25,1);
+  border-radius: 2px;
+  border: none;
 }
 
 GUMGA_LIST_KEY .smart-footer-item{
@@ -264,14 +264,14 @@ GUMGA_LIST_KEY .smart-footer-item ul li{
   padding: 16px 16px;
   font-size: 12px;
   color: rgba(0,0,0,0.87);
-  background: #F5F5F5 !important;
+  background: #F5F5F5;
   align-items: center;
   height: 48px;
 }
 
 GUMGA_LIST_KEY .smart-footer-item ul li.search{
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
 }
 
 GUMGA_LIST_KEY .smart-footer-item ul li.search input{
@@ -316,22 +316,25 @@ GUMGA_LIST_KEY .panel .panel-footer .page-select, GUMGA_LIST_KEY .panel .panel-h
 }
 
 GUMGA_LIST_KEY .input-inline-edit{
-    background: transparent !important;
-    border: none !important;
-    outline: 1px solid #ccc !important;
-    padding-left: 1px !important;
-    padding-right: 1px !important;
-    max-width: 100% !important;
-    width: 100% !important;
+    background: transparent ;
+    border: none ;
+    outline: 1px solid #ccc ;
+    padding-left: 1px ;
+    padding-right: 1px ;
+    max-width: 100% ;
+    width: 100% ;
 }
 
 GUMGA_LIST_KEY td[class*="td-checkbox"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[class*="ng-binding"]{
   font-family: Roboto,"Helvetica Neue",sans-serif;
-  padding: 0px 0px 0px 24px !important;
-  color: rgba(0,0,0,.87) !important;
-  font-size: 13px !important;
+  color: rgba(0,0,0,.87);
+  font-size: 13px;
   border-top: 1px solid rgba(168, 159, 159, 0.12);
   vertical-align: middle;
+}
+
+GUMGA_LIST_KEY .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
+  padding: 0px 0px 0px 24px !important;
 }
 
 
@@ -341,7 +344,7 @@ GUMGA_LIST_KEY table td:not(:empty){
 }
 
 GUMGA_LIST_KEY tr td < span:nth-child(n+10) {
-    background-color:red !important;
+    background-color:red ;
 }
 
 GUMGA_LIST_KEY .table-responsive{

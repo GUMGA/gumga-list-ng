@@ -113,7 +113,7 @@ function ListCreator() {
     }, ' ')
   }
 
-  function mountTable(config, className, style, tableId) {
+  function mountTable(config, className, style, tableId, styleMaterial, listName) {
     if (config.checkbox) {
       config.columnsConfig.unshift({
         title: `
@@ -135,9 +135,16 @@ function ListCreator() {
         conditional: angular.noop
       })
     }
+
+    if(config.materialTheme){
+      var style = document.createElement('style'), head = document.getElementsByTagName('head')[0];
+          style.innerHTML = styleMaterial;
+          style.id        = 'gumga-list' + ('-'+listName || '');
+          head.insertBefore(style, head.firstChild);
+    }
+
     return `
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
-        <style ng-if="ctrl.listConfig.materialTheme"> {{ctrl.getStyleMaterialDesign()}} </style>
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
           <div class="page-select"
               ng-show="ctrl.getPossibleColumns().length > 0"

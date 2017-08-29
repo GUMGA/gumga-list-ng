@@ -2,6 +2,7 @@
 <html lang="en" ng-app="yourApp">
 
 <head>
+
   <title>Gumga List</title>
   <meta charset="UTF-8">
   <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
@@ -13,6 +14,9 @@
 
   <style media="screen">
     gumga-list[name="pessoa"] tr td.inativo{
+      background: red;
+    }
+    gumga-list[name="pessoa"] .table>tbody>tr.active>td, gumga-list[name="pessoa"] .table>tbody>tr.active>th{
       background: red;
     }
   </style>
@@ -116,11 +120,11 @@
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
           },
-          conditionalClass: function(row){
-            return {
-              "inativo": row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
-            }
-          },
+          // conditionalClass: function(row){
+          //   return {
+          //     "inativo": row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
+          //   }
+          // },
           materialTheme: true,
           // checkboxColor: 'red',
           // activeLineColor: 'red',
