@@ -130,8 +130,9 @@ GUMGA_LIST_KEY .panel-actions .actions i,  GUMGA_LIST_KEY .panel-actions .action
 }
 
 GUMGA_LIST_KEY .table>thead>tr>th{
-  border: none ;
-  vertical-align: middle ;
+  border: none;
+  vertical-align: middle;
+  position: relative;
 }
 
 
