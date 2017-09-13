@@ -18,7 +18,11 @@ angular.module('app', ['gumga.list'])
           left: 2
       },
       columnsConfig: [
-
+        {
+          name: 'tag_name',
+          alignColumn: 'center',
+          alignRows: 'center' 
+        }
       ]
     }
 

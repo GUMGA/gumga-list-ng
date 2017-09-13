@@ -40,8 +40,10 @@ function List($compile, listCreator){
               label         = configuration.label       ||  column,
               content       = configuration.content     ||  '{{$value.' + column + '}}',
               sortField     = configuration.sortField   ||  null,
+              alignColumn   = configuration.alignColumn ||  'left',
+              alignRows     = configuration.alignRows   ||  'left',
               conditional   = configuration.conditional || angular.noop
-          return { title, size, name, content, sortField, conditional, editable, possibleColumn, label }
+          return { title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows  }
         })
       }
 

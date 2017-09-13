@@ -85,8 +85,8 @@ function ListCreator() {
   function generateHeaderColumns(columnsArray = [], hasCheckbox = true, tableId) {
     return columnsArray.reduce((prev, next, index) => {
       return prev += `
-          <th id="${tableId}-${next.name}" style="${next.style || ' '} white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
-            <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})" class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
+          <th id="${tableId}-${next.name}" style="${next.style}; text-align: ${next.alignColumn}; white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
+            <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
             <strong>
               ${formatTableHeader(next.sortField, next.title)}
             </strong>
@@ -104,6 +104,7 @@ function ListCreator() {
       }
       return prev += `
                 <td   class="${next.size}"
+                      style="text-align: ${next.alignRows};"
                       ng-class="ctrl.checkConditions($value)"
                       ng-dblclick="ctrl.editInline($event, $value, '${next.name}')"
                       ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }">

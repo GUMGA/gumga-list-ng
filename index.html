@@ -9,17 +9,7 @@
   <meta name="viewport" content="width=device-width">
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
-
   <link rel="stylesheet" href="https://gumga.github.io/layout/gumga-layout/gumga-layout.css"/>
-
-  <style media="screen">
-    gumga-list[name="pessoa"] tr td.inativo{
-      background: red;
-    }
-    gumga-list[name="pessoa"] .table>tbody>tr.active>td, gumga-list[name="pessoa"] .table>tbody>tr.active>th{
-      background: red;
-    }
-  </style>
 
 </head>
 
@@ -92,7 +82,8 @@
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-        $scope.pessoa.methods.getLatestOperation();
+        // $scope.pessoa.methods.getLatestOperation();
+        $scope.pessoa.methods.advancedSearch("obj.name like '%Ma%' ");
 
         $scope.update = function(){}
 
@@ -138,21 +129,21 @@
             {
               name: 'id',
               title: 'Codigo',
-              content: '{{$value.id}}',
-              // sortField: 'id'
+              content: '{{$value.id}}'
             },
             {
               name: 'name',
               editable: true,
               title: 'Nome completo',
               content: '{{$value.name}}',
-              sortField: 'name'
+              sortField: 'name',
+              alignColumn: 'center',
+              alignRows: 'left'
             },
             {
               name: 'login',
               title: 'E-mail',
-              content: '{{$value.login}}',
-              // sortField: 'login'
+              content: '{{$value.login}}'
             },
             {
               name: 'view',

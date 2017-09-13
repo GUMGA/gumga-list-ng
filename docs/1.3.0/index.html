@@ -35,6 +35,8 @@
         <div class="col-xs-6">
           <h2>Descrição</h2>
           <p>O componente gumgaList foi criado no intuito de substituir a gumgaTable. A partir de uma fonte de dados, é gerado uma tabela que é configurada através de um objeto javascript.</p>
+          <br>
+          <p class="text-warning"><b>Novidade, </b>agora você alinhar linhas e colunas do gumga list.</p>
         </div>
         <div class="col-xs-6">
           <h3>Instalação</h3>
@@ -47,8 +49,8 @@ bower install gumga-list-ng --save
 //Injeção do modulo
 angular.module('yourApp', ['gumga.list']);
 
-&lt;script src="node_modules/gumga-counter-ng/dist/gumga-list.min.js"&gt;&lt;/script&gt;
-&lt;script src="bower_components/gumga-counter-ng/dist/gumga-list.min.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="node_modules/gumga-list-ng/dist/gumga-list.min.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/gumga-list-ng/dist/gumga-list.min.js"&gt;&lt;/script&gt;</code></pre>
         </div>
       </div>
       <div class="panel panel-default">
@@ -128,7 +130,9 @@ angular.module('yourApp', ['gumga.list']);
       editable: true, // habilita a edição da coluna para editar o registro
       title: 'Nome completo',
       content: '{{$value.name}}',
-      sortField: 'name'
+      sortField: 'name',
+      alignColumn: 'center',
+      alignRows: 'center'
     },
     {
       name: 'login',

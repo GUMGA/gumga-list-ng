@@ -340,8 +340,8 @@ GUMGA_LIST_KEY .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .tabl
 
 
 GUMGA_LIST_KEY table td:not(:empty){
-   padding: 0px 24px 0px 24px;
-   vertical-align: middle;
+   padding: 0px 24px 0px 24px !important;
+   vertical-align: middle !important;
 }
 
 GUMGA_LIST_KEY tr td < span:nth-child(n+10) {
