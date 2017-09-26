@@ -37,7 +37,6 @@
                       on-row-change="update(row)"
                       on-page-change="pessoa.methods.get(page, pageSize)">
           </gumga-list>
-
         </div>
       </div>
 
@@ -77,13 +76,13 @@
       .controller('manyToOneCtrl', ['GumgaRest','gumgaController','$scope', '$http',
         function (GumgaRest,gumgaController,$scope, $http) {
 
-          var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
+        var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
           // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
         // $scope.pessoa.methods.getLatestOperation();
-        $scope.pessoa.methods.advancedSearch("obj.name like '%Ma%' ");
+        $scope.pessoa.methods.get();
 
         $scope.update = function(){}
 
@@ -135,10 +134,10 @@
               name: 'name',
               editable: true,
               title: 'Nome completo',
-              content: '{{$value.name}}',
+              content: '<span>{{$value.name}}</span>',
               sortField: 'name',
               alignColumn: 'center',
-              alignRows: 'left'
+              alignRows: 'right'
             },
             {
               name: 'login',

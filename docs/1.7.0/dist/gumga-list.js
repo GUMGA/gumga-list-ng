@@ -1145,7 +1145,7 @@ function List($compile, listCreator) {
       ctrl.loading = false;
     };
 
-    $scope.$watch('ctrl.data', function (data) {
+    $scope.$watch('ctrl.data', function () {
       if (ctrl.updatingRow) return;
       updateMap(ctrl.data);
       handlingGrid();
@@ -1264,7 +1264,6 @@ function List($compile, listCreator) {
     function doSort(sortField) {
       if (ctrl.activeSorted.direction) {
         ctrl.loading = true;
-        ctrl.data.loading = true;
       }
       ctrl.activeSorted.column = sortField;
       ctrl.activeSorted.direction = ctrl.activeSorted.direction == 'asc' ? 'desc' : 'asc';
@@ -1364,7 +1363,6 @@ function List($compile, listCreator) {
       if (ctrl.onPageChange) {
         if (page != ctrl.pageModel || itensPerPage != ctrl.pageSize) {
           ctrl.loading = true;
-          ctrl.data.loading = true;
         }
         ctrl.pageSize = itensPerPage || ctrl.pageSize;
         ctrl.pageModel = page || ctrl.pageModel;
@@ -1375,7 +1373,6 @@ function List($compile, listCreator) {
     ctrl.previousPage = function () {
       if (ctrl.onPageChange && ctrl.existsPreviousPage()) {
         ctrl.loading = true;
-        ctrl.data.loading = true;
         ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize });
         ctrl.pageModel = ctrl.pageModel - 1;
       }
@@ -1384,7 +1381,6 @@ function List($compile, listCreator) {
     ctrl.nextPage = function () {
       if (ctrl.onPageChange && ctrl.existsNextPage()) {
         ctrl.loading = true;
-        ctrl.data.loading = true;
         ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize });
         ctrl.pageModel = ctrl.pageModel + 1;
       }
@@ -1408,7 +1404,6 @@ function List($compile, listCreator) {
       if (evt.keyCode == 13) {
         if (ctrl.onPageChange && Number(evt.target.value) <= Math.ceil(ctrl.count / ctrl.pageSize) && evt.target.value != ctrl.pageModel) {
           ctrl.loading = true;
-          ctrl.data.loading = true;
           ctrl.onPageChange({ page: evt.target.value, pageSize: ctrl.pageSize });
           ctrl.pageModel = Number(evt.target.value);
         }
