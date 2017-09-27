@@ -33,7 +33,7 @@
                       page-align="flex-end"
                       count="pessoa.count"
                       page-model="page"
-                      sort="sortCustom(page, pessoa.pageSize, field, dir)"
+                      sort="pessoa.methods.sort(field, dir)"
                       on-row-change="update(row)"
                       on-page-change="pessoa.methods.get(page, pageSize)">
           </gumga-list>
@@ -77,9 +77,10 @@
         function (GumgaRest,gumgaController,$scope, $http) {
 
         var PessoaService = new GumgaRest('https://gumga.io/security-api/api/user');
-          // var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
+
+        // $scope.pessoa.pageSize = 5;
 
         // $scope.pessoa.methods.getLatestOperation();
         $scope.pessoa.methods.get();
@@ -104,7 +105,7 @@
 
         $scope.tableConfig = {
           columns: 'id, name, login',
-          itemsPerPage: [5, 10],
+          // itemsPerPage: [5, 10],
           checkbox: true,
           // title: 'Listagem de usuários',
           disabledRow: function(row){
