@@ -85,7 +85,7 @@ function ListCreator() {
   function generateHeaderColumns(columnsArray = [], hasCheckbox = true, tableId) {
     return columnsArray.reduce((prev, next, index) => {
       return prev += `
-          <th id="${tableId}-${next.name}" style="${next.style}; text-align: ${next.alignColumn}; white-space: nowrap; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
+          <th id="${tableId}-${next.name}" style="${next.style}; text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
             <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
             <strong>
               ${formatTableHeader(next.sortField, next.title)}
