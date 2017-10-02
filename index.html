@@ -111,26 +111,16 @@
           disabledRow: function(row){
             return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
           },
-          // conditionalClass: function(row){
-          //   return {
-          //     "inativo": row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
-          //   }
-          // },
           materialTheme: true,
-          // checkboxColor: 'red',
-          // activeLineColor: 'red',
           resizable: true,
-          // hoverLineColor: 'red',
           ordination: true,
-          // fixed: {
-          //     left: 2
-          // },
           selection: "multi",
           columnsConfig: [
             {
               name: 'id',
               title: 'Codigo para ver se quando o nome é grande se quebra a linha',
-              content: '{{$value.id}}'
+              content: '{{$value.id}}',
+              widthPorcentage: 30
             },
             {
               name: 'name',

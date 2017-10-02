@@ -42,8 +42,9 @@ function List($compile, listCreator){
               sortField     = configuration.sortField   ||  null,
               alignColumn   = configuration.alignColumn ||  'left',
               alignRows     = configuration.alignRows   ||  'left',
+              widthPorcentage     = configuration.widthPorcentage   ||  undefined,
               conditional   = configuration.conditional || angular.noop
-          return { title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows  }
+          return { title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows, widthPorcentage: widthPorcentage  }
         })
       }
 
@@ -120,6 +121,7 @@ function List($compile, listCreator){
         compileElement()
         handlingGrid();
         inactiveLoading();
+        ctrl.analyzeColumnsWidth();
       }
 
       const isLoading = (data) => data.filter(row => row['LIST-LOADING']).length > 0;
@@ -310,6 +312,22 @@ function List($compile, listCreator){
           if(cache){
             ctrl.config.columns = cache;
             ctrl.config = angular.copy(ctrl.config);
+          }
+        }
+      }
+
+      ctrl.analyzeColumnsWidth = () => {
+        let configKey = 'ngColumnResize.'+ctrl.getTableId()+'.BasicResizer';
+        if(ctrl.listConfig.columnsConfig) {
+          let config = {};
+          ctrl.listConfig.columnsConfig.forEach(column => {
+            if(column.widthPorcentage){
+              config[ctrl.getTableId()+'-'+column.name] = column.widthPorcentage + '%';
+            }
+          });
+          if(Object.keys(config).length > 0){
+            config[ctrl.getTableId()+'-$checkbox'] = '4%';
+            sessionStorage.setItem(configKey, JSON.stringify(config));
           }
         }
       }
