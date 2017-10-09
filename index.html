@@ -22,12 +22,26 @@
       <br>
       <br>
       <br>
-
+      
       <div class="col-md-12">
-        <div class="col-md-12">
+        <div class="col-md-6">
           <gumga-list data="pessoa.data"
-                      name="pessoa"
+                      name="pessoa2"
                       configuration="tableConfig"
+                      page-size="pessoa.pageSize"
+                      page-position="bottom"
+                      page-align="flex-end"
+                      count="pessoa.count"
+                      page-model="page"
+                      sort="pessoa.methods.sort(field, dir)"
+                      on-row-change="update(row)"
+                      on-page-change="pessoa.methods.get(page, pageSize)">
+          </gumga-list>
+        </div>
+        <div class="col-md-6">
+          <gumga-list data="pessoa.data"
+                      name="teste"
+                      configuration="tableConfig2"
                       page-size="pessoa.pageSize"
                       page-position="bottom"
                       page-align="flex-end"
@@ -101,6 +115,51 @@
                 $scope.pessoa.count     = resp.data.count;
                 $scope.pessoa.data     = resp.data.values;
               })
+        }
+
+        $scope.tableConfig2 = {
+          columns: 'id, name, login',
+          // itemsPerPage: [5, 10],
+          checkbox: true,
+          // title: 'Listagem de usuários',
+          disabledRow: function(row){
+            return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
+          },
+          materialTheme: true,
+          resizable: true,
+          ordination: true,
+          selection: "multi",
+          columnsConfig: [
+            {
+              name: 'id',
+              title: 'Codigo para ver se quando o nome é grande se quebra a linha',
+              content: '{{$value.id}}',
+              widthPorcentage: 15
+            },
+            {
+              name: 'name',
+              editable: true,
+              title: 'Nome completo',
+              content: '<span>{{$value.name}}</span>',
+              sortField: 'name',
+              alignColumn: 'center',
+              alignRows: 'right'
+            },
+            {
+              name: 'login',
+              title: 'E-mail',
+              content: '{{$value.login}}'
+            },
+            {
+              name: 'view',
+              title: 'Ações',
+              content: '<span class="pull-right">'+
+              '<a uib-tooltip="View" class="btn btn-primary btn-sm" ui-sref="gumgaController.view({id: $value.id })">' +
+              '   <i class="glyphicon glyphicon-eye-open"></i>'+
+              '</a>'+
+              '</span>'
+            }
+          ]
         }
 
         $scope.tableConfig = {

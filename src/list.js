@@ -529,6 +529,12 @@ function List($compile, listCreator){
         return window.sessionStorage.getItem('ngColumnOrder.gumga-list-'+ctrl.getTableId());
       }
 
+      ctrl.checkResizer = () => {
+        if($element.find('table')[0] && $element.find('table')[0].loadResize){
+          $element.find('table')[0].loadResize();
+        }
+      }
+
       ctrl.visibleRow = row => !row['LIST-LOADING'];
     }
 

@@ -397,10 +397,21 @@ angular.module("ngSmartGridResize", []);
 
 angular.module("ngSmartGridResize").directive('resizeable', ['resizeStorage', '$injector', function (resizeStorage, $injector) {
 
+    var mode;
+
+    var columns = null;
+    var ctrlColumns = null;
+    var handleColumns = null;
+    var table = null;
+    var container = null;
+    var resizer = null;
+    var isFirstDrag = true;
+
+    var cache = null;
+
     function link(scope, element, attr) {
         // Set global reference to table
-        var table = element;
-        var container = null;
+        table = element;
 
         // Set global reference to container
         container = scope.container ? $(scope.container) : $(table).parent();
@@ -416,210 +427,209 @@ angular.module("ngSmartGridResize").directive('resizeable', ['resizeStorage', '$
 
         // Watch for mode changes and update all
         watchModeChange(table, attr, scope);
+    }
 
-        function bindUtilityFunctions(table, attr, scope) {
-            if (scope.bind === undefined) return;
-            scope.bind = {
-                update: function update() {
-                    cleanUpAll(table);
-                    initialiseAll(table, attr, scope);
-                }
-            };
-        }
-
-        function watchModeChange(table, attr, scope) {
-            scope.$watch(function () {
-                return scope.mode;
-            }, function () /*newMode*/{
+    function bindUtilityFunctions(table, attr, scope) {
+        if (scope.bind === undefined) return;
+        scope.bind = {
+            update: function update() {
                 cleanUpAll(table);
                 initialiseAll(table, attr, scope);
-            });
-        }
-
-        function cleanUpAll(table) {
-            table.isFirstDrag = true;
-            deleteHandles(table);
-        }
-
-        function resetTable(table) {
-            $(table).outerWidth('100%');
-            $(table).find('th').width('auto');
-        }
-
-        function deleteHandles(table) {
-            $(table).find('th').find('.handle').remove();
-        }
-
-        function initialiseAll(table, attr, scope) {
-            // Get all column headers
-            table.columns = $(table).find('th');
-            table.mode = scope.mode;
-
-            // Get the resizer object for the current mode
-            var ResizeModel = getResizer(scope);
-            if (!ResizeModel) return;
-            table.resizer = new ResizeModel(table, table.columns, container);
-
-            // Load column sized from saved storage
-            table.cache = resizeStorage.loadTableSizes(table, scope.mode);
-
-            // Decide which columns should have a handler attached
-            table.handleColumns = table.resizer.handles(table.columns);
-
-            // Decide which columns are controlled and resized
-            table.ctrlColumns = table.resizer.ctrlColumns;
-
-            // Execute setup function for the given resizer mode
-            table.resizer.setup();
-
-            // Set column sizes from cache
-            setColumnSizes(table.cache);
-
-            // Initialise all handlers for every column
-            table.handleColumns.each(function (index, column) {
-                initHandle(table, column);
-            });
-        }
-
-        function setColumnSizes(cache) {
-            if (!cache) {
-                resetTable(table);
-                return;
             }
-            $(table).width('auto');
+        };
+    }
 
-            angular.element(table)[0].loadResize = function () {
-                table.ctrlColumns.each(function (index, column) {
-                    var id = $(column).attr('id');
-                    var cacheWidth = cache[id];
-                    angular.element(column).css({ width: cacheWidth });
-                });
-            };
+    function watchModeChange(table, attr, scope) {
+        scope.$watch(function () {
+            return scope.mode;
+        }, function () /*newMode*/{
+            cleanUpAll(table);
+            initialiseAll(table, attr, scope);
+        });
+    }
 
-            angular.element(table)[0].loadResize();
+    function cleanUpAll(table) {
+        isFirstDrag = true;
+        deleteHandles(table);
+    }
 
-            table.resizer.onTableReady();
+    function resetTable(table) {
+        $(table).outerWidth('100%');
+        $(table).find('th').width('auto');
+    }
+
+    function deleteHandles(table) {
+        $(table).find('th').find('.handle').remove();
+    }
+
+    function initialiseAll(table, attr, scope) {
+        // Get all column headers
+        columns = $(table).find('th');
+
+        mode = scope.mode;
+
+        // Get the resizer object for the current mode
+        var ResizeModel = getResizer(scope);
+        if (!ResizeModel) return;
+        resizer = new ResizeModel(table, columns, container);
+
+        // Load column sized from saved storage
+        cache = resizeStorage.loadTableSizes(table, scope.mode);
+
+        // Decide which columns should have a handler attached
+        handleColumns = resizer.handles(columns);
+
+        // Decide which columns are controlled and resized
+        ctrlColumns = resizer.ctrlColumns;
+
+        // Execute setup function for the given resizer mode
+        resizer.setup();
+
+        // Set column sizes from cache
+        setColumnSizes(cache);
+
+        // Initialise all handlers for every column
+        handleColumns.each(function (index, column) {
+            initHandle(table, column);
+        });
+    }
+
+    function setColumnSizes(cache) {
+        if (!cache) {
+            resetTable(table);
+            return;
         }
 
-        function initHandle(table, column) {
-            // Prepend a new handle div to the column
-            var handle = $('<div>', {
-                class: 'handle'
-            });
-
-            // var oldContent = angular.element(angular.element(column).html());
-            //
-            //
-            // handle.prepend(oldContent);
-
-            $(column).prepend(handle);
-
-            // Make handle as tall as the table
-            //$(handle).height($(table).height())
-
-            // Use the middleware to decide which columns this handle controls
-            var controlledColumn = table.resizer.handleMiddleware(handle, column);
-
-            // Bind mousedown, mousemove & mouseup events
-            bindEventToHandle(table, handle, controlledColumn);
-        }
-
-        function bindEventToHandle(table, handle, column) {
-
-            // This event starts the dragging
-            $(handle).mousedown(function (event) {
-                if (table.isFirstDrag) {
-                    table.resizer.onFirstDrag(column, handle);
-                    table.resizer.onTableReady();
-                    table.isFirstDrag = false;
-                }
-
-                var optional = {};
-                if (table.resizer.intervene) {
-                    optional = table.resizer.intervene.selector(column);
-                    optional.column = optional;
-                    optional.orgWidth = $(optional).width();
-                }
-
-                // Prevent text-selection, object dragging ect.
-                event.preventDefault();
-
-                // Change css styles for the handle
-                $(handle).addClass('active');
-
-                // Show the resize cursor globally
-                $('body').addClass('table-resize');
-
-                // Get mouse and column origin measurements
-                var orgX = event.clientX;
-                var orgWidth = $(column).width();
-
-                // On every mouse move, calculate the new width
-                $(window).mousemove(calculateWidthEvent(column, orgX, orgWidth, optional));
-
-                // Stop dragging as soon as the mouse is released
-                $(window).one('mouseup', unbindEvent(handle));
-            });
-        }
-
-        function calculateWidthEvent(column, orgX, orgWidth, optional) {
-            return function (event) {
-                // Get current mouse position
-                var newX = event.clientX;
-
-                // Use calculator function to calculate new width
-                var diffX = newX - orgX;
-                var newWidth = table.resizer.calculate(orgWidth, diffX);
-
-                // Use restric function to abort potential restriction
-                if (table.resizer.restrict(newWidth)) return;
-
-                // Extra optional column
-                if (table.resizer.intervene) {
-                    var optWidth = table.resizer.intervene.calculator(optional.orgWidth, diffX);
-                    if (table.resizer.intervene.restrict(optWidth)) return;
-                    $(optional).width(optWidth);
-                }
-
-                // Set size
-                $(column).width(newWidth);
-            };
-        }
-
-        function getResizer(scope) {
-            try {
-                var Resizer = $injector.get(scope.mode);
-                return Resizer;
-            } catch (e) {
-                console.error("The resizer " + scope.mode + " was not found");
-                return null;
-            }
-        }
-
-        function unbindEvent(handle) {
-            // Event called at end of drag
-            return function () /*event*/{
-                $(handle).removeClass('active');
-                $(window).unbind('mousemove');
-                $('body').removeClass('table-resize');
-
-                table.resizer.onEndDrag();
-
-                saveColumnSizes();
-            };
-        }
-
-        function saveColumnSizes() {
-            if (!table.cache) table.cache = {};
-
-            $(table.columns).each(function (index, column) {
+        $(table).width('auto');
+        setTimeout(function () {
+            ctrlColumns.each(function (index, column) {
                 var id = $(column).attr('id');
-                if (!id) return;
-                table.cache[id] = table.resizer.saveAttr(column);
-            });
+                var cacheWidth = cache[id];
 
-            resizeStorage.saveTableSizes(table, table.mode, table.cache);
+                $(column).css({ width: cacheWidth });
+            });
+        }, 100);
+        resizer.onTableReady();
+    }
+
+    function initHandle(table, column) {
+        // Prepend a new handle div to the column
+        var handle = $('<div>', {
+            class: 'handle'
+        });
+
+        // var oldContent = angular.element(angular.element(column).html());
+        //
+        //
+        // handle.prepend(oldContent);
+
+        $(column).prepend(handle);
+
+        // Make handle as tall as the table
+        //$(handle).height($(table).height())
+
+        // Use the middleware to decide which columns this handle controls
+        var controlledColumn = resizer.handleMiddleware(handle, column);
+
+        // Bind mousedown, mousemove & mouseup events
+        bindEventToHandle(table, handle, controlledColumn);
+    }
+
+    function bindEventToHandle(table, handle, column) {
+
+        // This event starts the dragging
+        $(handle).mousedown(function (event) {
+            if (isFirstDrag) {
+                resizer.onFirstDrag(column, handle);
+                resizer.onTableReady();
+                isFirstDrag = false;
+            }
+
+            var optional = {};
+            if (resizer.intervene) {
+                optional = resizer.intervene.selector(column);
+                optional.column = optional;
+                optional.orgWidth = $(optional).width();
+            }
+
+            // Prevent text-selection, object dragging ect.
+            event.preventDefault();
+
+            // Change css styles for the handle
+            $(handle).addClass('active');
+
+            // Show the resize cursor globally
+            $('body').addClass('table-resize');
+
+            // Get mouse and column origin measurements
+            var orgX = event.clientX;
+            var orgWidth = $(column).width();
+
+            // On every mouse move, calculate the new width
+            $(window).mousemove(calculateWidthEvent(column, orgX, orgWidth, optional));
+
+            // Stop dragging as soon as the mouse is released
+            $(window).one('mouseup', unbindEvent(handle));
+        });
+    }
+
+    function calculateWidthEvent(column, orgX, orgWidth, optional) {
+        return function (event) {
+            // Get current mouse position
+            var newX = event.clientX;
+
+            // Use calculator function to calculate new width
+            var diffX = newX - orgX;
+            var newWidth = resizer.calculate(orgWidth, diffX);
+
+            // Use restric function to abort potential restriction
+            if (resizer.restrict(newWidth)) return;
+
+            // Extra optional column
+            if (resizer.intervene) {
+                var optWidth = resizer.intervene.calculator(optional.orgWidth, diffX);
+                if (resizer.intervene.restrict(optWidth)) return;
+                $(optional).width(optWidth);
+            }
+
+            // Set size
+            $(column).width(newWidth);
+        };
+    }
+
+    function getResizer(scope) {
+        try {
+            var Resizer = $injector.get(scope.mode);
+            return Resizer;
+        } catch (e) {
+            console.error("The resizer " + scope.mode + " was not found");
+            return null;
         }
+    }
+
+    function unbindEvent(handle) {
+        // Event called at end of drag
+        return function () /*event*/{
+            $(handle).removeClass('active');
+            $(window).unbind('mousemove');
+            $('body').removeClass('table-resize');
+
+            resizer.onEndDrag();
+
+            saveColumnSizes();
+        };
+    }
+
+    function saveColumnSizes() {
+        if (!cache) cache = {};
+
+        $(columns).each(function (index, column) {
+            var id = $(column).attr('id');
+            if (!id) return;
+            cache[id] = resizer.saveAttr(column);
+        });
+
+        resizeStorage.saveTableSizes(table, mode, cache);
     }
 
     // Return this directive as a object literal
@@ -941,7 +951,7 @@ function ListCreator() {
     var tableId = arguments[2];
 
     return columnsArray.reduce(function (prev, next, index) {
-      return prev += '\n          <th ng-init="ctrl.checkResizer()" id="' + tableId + '-' + next.name + '" style="' + (next.style ? next.style + ';' : '') + 'text-align: ' + next.alignColumn + '; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? \'\' : \'z-index: 1;\'}}" class="' + (next.size || ' ') + '">\n            <i ng-show="ctrl.isPosssibleLeft(\'' + next.name + '\', ' + index + ')"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn(\'left\', \'' + next.name + '\')"></i>\n            <strong>\n              ' + formatTableHeader(next.sortField, next.title) + '\n            </strong>\n            <i ng-show="ctrl.isPosssibleRight(\'' + next.name + '\', ' + index + ')" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn(\'right\', \'' + next.name + '\')"></i>\n          </th>\n          ';
+      return prev += '\n          <th id="' + tableId + '-' + next.name + '" style="' + next.style + '; text-align: ' + next.alignColumn + '; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? \'\' : \'z-index: 1;\'}}" class="' + (next.size || ' ') + '">\n            <i ng-show="ctrl.isPosssibleLeft(\'' + next.name + '\', ' + index + ')"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn(\'left\', \'' + next.name + '\')"></i>\n            <strong>\n              ' + formatTableHeader(next.sortField, next.title) + '\n            </strong>\n            <i ng-show="ctrl.isPosssibleRight(\'' + next.name + '\', ' + index + ')" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn(\'right\', \'' + next.name + '\')"></i>\n          </th>\n          ';
     }, ' ');
   }
 
@@ -973,7 +983,7 @@ function ListCreator() {
       head.insertBefore(style, head.firstChild);
     }
 
-    return '\n        ' + (config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' ') + '\n        <div class="{{ctrl.listConfig.materialTheme ? \'gmd panel\': \'\'}}">\n          <div class="page-select"\n              ng-show="ctrl.getPossibleColumns().length > 0"\n              style="position: absolute;right: 35px;z-index: 10;top: 15px;">\n                <div class="btn-group smart-footer-item">\n                  <button class="btn btn-default dropdown-toggle "\n                          data-toggle="dropdown"\n                          type="button"\n                          aria-haspopup="true"\n                          aria-expanded="false" style="font-size: 14px;">\n                          <span class="glyphicon glyphicon-plus"></span>\n                  </button>\n                  <ul class="gmd dropdown-menu" style="margin-left: -120px;margin-top: -20px;">\n                    <li style="border-bottom: 1px solid #ddd;">\n                      <label>Adicionar colunas</label>\n                    </li>\n                    <li class="effect-ripple"\n                        ng-repeat="column in ctrl.getPossibleColumns() track by $index"\n                        ng-click="ctrl.addColumn(column)">\n                        {{column.label || column.name}}\n                    </li>\n                  </ul>\n                </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme\n                        && ((ctrl.listConfig.actions.length > 0\n                        || ctrl.listConfig.title)\n                        || ctrl.listConfig.enabledBetweenLines))"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-actions\': \'\'}}">\n              <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>\n              <div class="actions">\n                <div  ng-repeat="action in ctrl.listConfig.actions"\n                      ng-click="action.onClick(ctrl.selectedValues, ctrl.data)"\n                      style="float: left;padding-left: 15px;"\n                      class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"\n                      ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>\n\n                <div style="float: left;padding-left: 15px;" ng-show="ctrl.listConfig.enabledBetweenLines">\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(25)" style="font-size: 14px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(48)" style="font-size: 16px;margin-left: 5px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(60)" style="font-size: 20px;margin-left: 5px;"></i>\n                </div>\n              </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'TOP\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-heading\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n              ' + paginationTemplate + '\n          </div>\n          <div class="{{ctrl.listConfig.materialTheme ? \'panel-body\': \'\'}}" style="padding: 0;">\n            <div class="table-responsive" style="{{ctrl.maxHeight ? \'max-height: \'+ctrl.maxHeight : \'\'}}">\n\n              <table class="' + className + '" ' + (config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' ') + ' id="' + tableId + '">\n                <thead>\n                  <tr>\n                    ' + generateHeader(config, tableId) + '\n                  </tr>\n                </thead>\n                <tbody ng-init="ctrl.checkResizer()">\n                  <tr ng-style="{ \'border-left\': {{ctrl.conditional($value)}} }"\n                      style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'opacity: 0.4;\' : \'\'}}"\n                      class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'row-disabled\' : \'\'}} "\n                      ng-dblclick="ctrl.doubleClick($value)"\n                      ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                      ng-repeat="$value in ctrl.data track by $index"\n                      ng-init="ctrl.checkResizer()"\n                      ng-show="ctrl.visibleRow($value)"\n                      ng-click="ctrl.select($index,$event)">\n                      ' + generateBody(config.columnsConfig) + '\n                  </tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'BOTTOM\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-footer gumga-list-paginable\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n               <div class="signal" ng-show="ctrl.loading"></div>\n              ' + paginationTemplate + '\n          </div>\n        </div>\n        ';
+    return '\n        ' + (config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' ') + '\n        <div class="{{ctrl.listConfig.materialTheme ? \'gmd panel\': \'\'}}">\n          <div class="page-select"\n              ng-show="ctrl.getPossibleColumns().length > 0"\n              style="position: absolute;right: 35px;z-index: 10;top: 15px;">\n                <div class="btn-group smart-footer-item">\n                  <button class="btn btn-default dropdown-toggle "\n                          data-toggle="dropdown"\n                          type="button"\n                          aria-haspopup="true"\n                          aria-expanded="false" style="font-size: 14px;">\n                          <span class="glyphicon glyphicon-plus"></span>\n                  </button>\n                  <ul class="gmd dropdown-menu" style="margin-left: -120px;margin-top: -20px;">\n                    <li style="border-bottom: 1px solid #ddd;">\n                      <label>Adicionar colunas</label>\n                    </li>\n                    <li class="effect-ripple"\n                        ng-repeat="column in ctrl.getPossibleColumns() track by $index"\n                        ng-click="ctrl.addColumn(column)">\n                        {{column.label || column.name}}\n                    </li>\n                  </ul>\n                </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme\n                        && ((ctrl.listConfig.actions.length > 0\n                        || ctrl.listConfig.title)\n                        || ctrl.listConfig.enabledBetweenLines))"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-actions\': \'\'}}">\n              <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>\n              <div class="actions">\n                <div  ng-repeat="action in ctrl.listConfig.actions"\n                      ng-click="action.onClick(ctrl.selectedValues, ctrl.data)"\n                      style="float: left;padding-left: 15px;"\n                      class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"\n                      ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>\n\n                <div style="float: left;padding-left: 15px;" ng-show="ctrl.listConfig.enabledBetweenLines">\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(25)" style="font-size: 14px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(48)" style="font-size: 16px;margin-left: 5px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(60)" style="font-size: 20px;margin-left: 5px;"></i>\n                </div>\n              </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'TOP\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-heading\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n              ' + paginationTemplate + '\n          </div>\n          <div class="{{ctrl.listConfig.materialTheme ? \'panel-body\': \'\'}}" style="padding: 0;">\n            <div class="table-responsive" style="{{ctrl.maxHeight ? \'max-height: \'+ctrl.maxHeight : \'\'}}">\n\n              <table class="' + className + '" ' + (config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' ') + ' id="' + tableId + '">\n                <thead>\n                  <tr>\n                    ' + generateHeader(config, tableId) + '\n                  </tr>\n                </thead>\n                <tbody>\n                  <tr ng-style="{ \'border-left\': {{ctrl.conditional($value)}} }"\n                      style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'opacity: 0.4;\' : \'\'}}"\n                      class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'row-disabled\' : \'\'}} "\n                      ng-dblclick="ctrl.doubleClick($value)"\n                      ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                      ng-repeat="$value in ctrl.data track by $index"\n                      ng-show="ctrl.visibleRow($value)"\n                      ng-click="ctrl.select($index,$event)">\n                      ' + generateBody(config.columnsConfig) + '\n                  </tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'BOTTOM\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-footer gumga-list-paginable\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n               <div class="signal" ng-show="ctrl.loading"></div>\n              ' + paginationTemplate + '\n          </div>\n        </div>\n        ';
   }
 
   return { mountTable: mountTable };
@@ -1578,12 +1588,6 @@ function List($compile, listCreator) {
 
     ctrl.getOrderColumnsStorage = function (columns) {
       return window.sessionStorage.getItem('ngColumnOrder.gumga-list-' + ctrl.getTableId());
-    };
-
-    ctrl.checkResizer = function () {
-      if ($element.find('table')[0] && $element.find('table')[0].loadResize) {
-        $element.find('table')[0].loadResize();
-      }
     };
 
     ctrl.visibleRow = function (row) {

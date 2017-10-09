@@ -85,7 +85,7 @@ function ListCreator() {
   function generateHeaderColumns(columnsArray = [], hasCheckbox = true, tableId) {
     return columnsArray.reduce((prev, next, index) => {
       return prev += `
-          <th id="${tableId}-${next.name}" style="${next.style}; text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
+          <th ng-init="ctrl.checkResizer()" id="${tableId}-${next.name}" style="${next.style ? next.style+';' : ''}text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
             <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
             <strong>
               ${formatTableHeader(next.sortField, next.title)}
@@ -204,13 +204,14 @@ function ListCreator() {
                     ${generateHeader(config, tableId)}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody ng-init="ctrl.checkResizer()">
                   <tr ng-style="{ 'border-left': {{ctrl.conditional($value)}} }"
                       style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'opacity: 0.4;' : ''}}"
                       class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? 'row-disabled' : ''}} "
                       ng-dblclick="ctrl.doubleClick($value)"
                       ng-class="ctrl.selectedMap[$index].checkbox ? 'active active-list' : ''"
                       ng-repeat="$value in ctrl.data track by $index"
+                      ng-init="ctrl.checkResizer()"
                       ng-show="ctrl.visibleRow($value)"
                       ng-click="ctrl.select($index,$event)">
                       ${generateBody(config.columnsConfig)}
