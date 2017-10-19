@@ -1408,7 +1408,6 @@ function List($compile, listCreator) {
       if (ctrl.onPageChange && ctrl.existsNextPage()) {
         activeLoading();
         ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
-        console.log(ctrl.activeSorted);
         ctrl.pageModel = ctrl.pageModel + 1;
       }
     };
