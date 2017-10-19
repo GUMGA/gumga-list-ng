@@ -1391,14 +1391,15 @@ function List($compile, listCreator) {
         }
         ctrl.pageSize = itensPerPage || ctrl.pageSize;
         ctrl.pageModel = page || ctrl.pageModel;
-        ctrl.onPageChange({ page: page, pageSize: ctrl.pageSize });
+
+        ctrl.onPageChange({ page: page, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
       }
     };
 
     ctrl.previousPage = function () {
       if (ctrl.onPageChange && ctrl.existsPreviousPage()) {
         activeLoading();
-        ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize });
+        ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
         ctrl.pageModel = ctrl.pageModel - 1;
       }
     };
@@ -1406,7 +1407,8 @@ function List($compile, listCreator) {
     ctrl.nextPage = function () {
       if (ctrl.onPageChange && ctrl.existsNextPage()) {
         activeLoading();
-        ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize });
+        ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
+        console.log(ctrl.activeSorted);
         ctrl.pageModel = ctrl.pageModel + 1;
       }
     };
@@ -1429,7 +1431,7 @@ function List($compile, listCreator) {
       if (evt.keyCode == 13) {
         if (ctrl.onPageChange && Number(evt.target.value) <= Math.ceil(ctrl.count / ctrl.pageSize) && evt.target.value != ctrl.pageModel) {
           activeLoading();
-          ctrl.onPageChange({ page: evt.target.value, pageSize: ctrl.pageSize });
+          ctrl.onPageChange({ page: evt.target.value, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
           ctrl.pageModel = Number(evt.target.value);
         }
       }
