@@ -335,7 +335,8 @@ GUMGA_LIST_KEY td[class*="td-checkbox"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[cl
 }
 
 GUMGA_LIST_KEY .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
-  padding: 0px 0px 0px 24px !important;
+  padding: 10px 5px 10px 24px !important;
+  
 }
 
 
@@ -431,6 +432,13 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:after, .pure-radiob
 GUMGA_LIST_KEY .pure-checkbox{
   width: 18px;
   display: inline-block;
+}
+
+GUMGA_LIST_KEY .sort-caret-span{
+    display: flex;
+    align-items: center;
+    margin-right: 17px;
+    margin-left: 5px;
 }
 
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:checked + label:after, .pure-radiobutton input[type="checkbox"]:checked + label:after {

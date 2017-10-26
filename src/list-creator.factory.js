@@ -65,12 +65,15 @@ function ListCreator() {
 
   function formatTableHeader(sortField, title) {
     let templateWithSort = `
+        <div style="display: flex">
         <a ng-click="ctrl.doSort('${sortField}')" class="th-sort">
           ${title}
-          <span style="{{ctrl.activeSorted.column  == '${sortField}' ? '': 'opacity: 0.4;'}}" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
-            <span class="caret"></span>
-          </span>
-        </a>`;
+        </a>
+        <span class="sort-caret-span" style="{{ctrl.activeSorted.column  == '${sortField}' ? '': 'opacity: 0.4;'}}" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
+          <span class="caret"></span>
+        </span>
+        </div>
+`;
     return !!sortField ? templateWithSort : title;
   }
 

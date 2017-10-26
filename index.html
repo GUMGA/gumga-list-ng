@@ -83,7 +83,7 @@
   <script>
     angular.module('yourApp', ['gumga.rest','gumga.controller','gumga.list'])
       .config(function ($httpProvider) {
-        $httpProvider.defaults.headers.common['gumgaToken'] = 'eterno'
+        $httpProvider.defaults.headers.common['gumgaToken'] = 'algum_token'
         // $httpProvider.defaults.headers.common['gumgaToken'] = 'homologacaokids'
         // $httpProvider.defaults.headers.common['gumgaToken'] = 'batistakids'
       })
@@ -133,6 +133,7 @@
             {
               name: 'id',
               title: 'Codigo para ver se quando o nome é grande se quebra a linha',
+              sortField: 'name',
               content: '{{$value.id}}',
               widthPorcentage: 15
             },
