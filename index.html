@@ -39,12 +39,14 @@
           </gumga-list>
         </div>
         <div class="col-md-6">
+          {{ola}}
           <gumga-list data="pessoa.data"
                       name="teste"
                       configuration="tableConfig2"
                       page-size="pessoa.pageSize"
                       page-position="bottom"
                       page-align="flex-end"
+                      active-sorted="ola"
                       count="pessoa.count"
                       page-model="page"
                       sort="pessoa.methods.sort(field, dir)"
@@ -132,10 +134,9 @@
           columnsConfig: [
             {
               name: 'id',
-              title: 'Codigo para ver se quando o nome é grande se quebra a linha',
-              sortField: 'name',
-              content: '{{$value.id}}',
-              widthPorcentage: 15
+              title: 'Esse é um titulo grande para tentar bugar o component',
+              sortField: 'id',
+              content: '{{$value.id}}'
             },
             {
               name: 'name',
@@ -178,9 +179,10 @@
           columnsConfig: [
             {
               name: 'id',
+              sortField: 'id',
               title: 'Codigo para ver se quando o nome é grande se quebra a linha',
-              content: '{{$value.id}}',
-              widthPorcentage: 8
+              content: '{{$value.id}}'
+              // widthPorcentage: 8
             },
             {
               name: 'name',

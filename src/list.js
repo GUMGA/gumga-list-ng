@@ -558,7 +558,8 @@ function List($compile, listCreator){
         'count': '=?',
         'pageModel': '=?',
         'onPageChange': '&?',
-        'onRowChange': '&?'
+        'onRowChange': '&?',
+        'activeSorted' : '=?'
       },
       bindToController: true,
       controllerAs: 'ctrl',

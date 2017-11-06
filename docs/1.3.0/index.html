@@ -187,10 +187,16 @@ angular.module('yourApp', ['gumga.list']);
               <td>Atributo obrigatório que irá conter um objeto com o qual os dados serão formatados para montar a tabela.</td>
             </tr>
             <tr>
-              <td><strong>sort</strong></td>
-              <td><code>Function</code></td>
+                <td><strong>sort</strong></td>
+                <td><code>Function</code></td>
+                <td>Não</td>
+                <td>Atributo opcional que irá conter uma função que será chamada quando o usuário clicar no título da tabela. Os parâmetros desta função necessitam obrigatóriamente ser: field e dir, como por exemplo: <code>sort="sortFunction(field,dir)"</code>.</td>
+              </tr>
+            <tr>
+              <td><strong>active-sorted</strong></td>
+              <td><code>String</code></td>
               <td>Não</td>
-              <td>Atributo opcional que irá conter uma função que será chamada quando o usuário clicar no título da tabela. Os parâmetros desta função necessitam obrigatóriamente ser: field e dir, como por exemplo: <code>sort="sortFunction(field,dir)"</code>.</td>
+              <td>Nome de uma variável para que você saiba a ordenação atual dos registros.</code>.</td>
             </tr>
             <tr>
               <td><strong>on-sort</strong></td>

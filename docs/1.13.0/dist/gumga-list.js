@@ -397,10 +397,21 @@ angular.module("ngSmartGridResize", []);
 
 angular.module("ngSmartGridResize").directive('resizeable', ['resizeStorage', '$injector', function (resizeStorage, $injector) {
 
+    var mode;
+
+    var columns = null;
+    var ctrlColumns = null;
+    var handleColumns = null;
+    var table = null;
+    var container = null;
+    var resizer = null;
+    var isFirstDrag = true;
+
+    var cache = null;
+
     function link(scope, element, attr) {
         // Set global reference to table
-        var table = element;
-        var container = null;
+        table = element;
 
         // Set global reference to container
         container = scope.container ? $(scope.container) : $(table).parent();
@@ -416,210 +427,209 @@ angular.module("ngSmartGridResize").directive('resizeable', ['resizeStorage', '$
 
         // Watch for mode changes and update all
         watchModeChange(table, attr, scope);
+    }
 
-        function bindUtilityFunctions(table, attr, scope) {
-            if (scope.bind === undefined) return;
-            scope.bind = {
-                update: function update() {
-                    cleanUpAll(table);
-                    initialiseAll(table, attr, scope);
-                }
-            };
-        }
-
-        function watchModeChange(table, attr, scope) {
-            scope.$watch(function () {
-                return scope.mode;
-            }, function () /*newMode*/{
+    function bindUtilityFunctions(table, attr, scope) {
+        if (scope.bind === undefined) return;
+        scope.bind = {
+            update: function update() {
                 cleanUpAll(table);
                 initialiseAll(table, attr, scope);
-            });
-        }
-
-        function cleanUpAll(table) {
-            table.isFirstDrag = true;
-            deleteHandles(table);
-        }
-
-        function resetTable(table) {
-            $(table).outerWidth('100%');
-            $(table).find('th').width('auto');
-        }
-
-        function deleteHandles(table) {
-            $(table).find('th').find('.handle').remove();
-        }
-
-        function initialiseAll(table, attr, scope) {
-            // Get all column headers
-            table.columns = $(table).find('th');
-            table.mode = scope.mode;
-
-            // Get the resizer object for the current mode
-            var ResizeModel = getResizer(scope);
-            if (!ResizeModel) return;
-            table.resizer = new ResizeModel(table, table.columns, container);
-
-            // Load column sized from saved storage
-            table.cache = resizeStorage.loadTableSizes(table, scope.mode);
-
-            // Decide which columns should have a handler attached
-            table.handleColumns = table.resizer.handles(table.columns);
-
-            // Decide which columns are controlled and resized
-            table.ctrlColumns = table.resizer.ctrlColumns;
-
-            // Execute setup function for the given resizer mode
-            table.resizer.setup();
-
-            // Set column sizes from cache
-            setColumnSizes(table.cache);
-
-            // Initialise all handlers for every column
-            table.handleColumns.each(function (index, column) {
-                initHandle(table, column);
-            });
-        }
-
-        function setColumnSizes(cache) {
-            if (!cache) {
-                resetTable(table);
-                return;
             }
-            $(table).width('auto');
+        };
+    }
 
-            angular.element(table)[0].loadResize = function () {
-                table.ctrlColumns.each(function (index, column) {
-                    var id = $(column).attr('id');
-                    var cacheWidth = cache[id];
-                    angular.element(column).css({ width: cacheWidth });
-                });
-            };
+    function watchModeChange(table, attr, scope) {
+        scope.$watch(function () {
+            return scope.mode;
+        }, function () /*newMode*/{
+            cleanUpAll(table);
+            initialiseAll(table, attr, scope);
+        });
+    }
 
-            angular.element(table)[0].loadResize();
+    function cleanUpAll(table) {
+        isFirstDrag = true;
+        deleteHandles(table);
+    }
 
-            table.resizer.onTableReady();
+    function resetTable(table) {
+        $(table).outerWidth('100%');
+        $(table).find('th').width('auto');
+    }
+
+    function deleteHandles(table) {
+        $(table).find('th').find('.handle').remove();
+    }
+
+    function initialiseAll(table, attr, scope) {
+        // Get all column headers
+        columns = $(table).find('th');
+
+        mode = scope.mode;
+
+        // Get the resizer object for the current mode
+        var ResizeModel = getResizer(scope);
+        if (!ResizeModel) return;
+        resizer = new ResizeModel(table, columns, container);
+
+        // Load column sized from saved storage
+        cache = resizeStorage.loadTableSizes(table, scope.mode);
+
+        // Decide which columns should have a handler attached
+        handleColumns = resizer.handles(columns);
+
+        // Decide which columns are controlled and resized
+        ctrlColumns = resizer.ctrlColumns;
+
+        // Execute setup function for the given resizer mode
+        resizer.setup();
+
+        // Set column sizes from cache
+        setColumnSizes(cache);
+
+        // Initialise all handlers for every column
+        handleColumns.each(function (index, column) {
+            initHandle(table, column);
+        });
+    }
+
+    function setColumnSizes(cache) {
+        if (!cache) {
+            resetTable(table);
+            return;
         }
 
-        function initHandle(table, column) {
-            // Prepend a new handle div to the column
-            var handle = $('<div>', {
-                class: 'handle'
-            });
-
-            // var oldContent = angular.element(angular.element(column).html());
-            //
-            //
-            // handle.prepend(oldContent);
-
-            $(column).prepend(handle);
-
-            // Make handle as tall as the table
-            //$(handle).height($(table).height())
-
-            // Use the middleware to decide which columns this handle controls
-            var controlledColumn = table.resizer.handleMiddleware(handle, column);
-
-            // Bind mousedown, mousemove & mouseup events
-            bindEventToHandle(table, handle, controlledColumn);
-        }
-
-        function bindEventToHandle(table, handle, column) {
-
-            // This event starts the dragging
-            $(handle).mousedown(function (event) {
-                if (table.isFirstDrag) {
-                    table.resizer.onFirstDrag(column, handle);
-                    table.resizer.onTableReady();
-                    table.isFirstDrag = false;
-                }
-
-                var optional = {};
-                if (table.resizer.intervene) {
-                    optional = table.resizer.intervene.selector(column);
-                    optional.column = optional;
-                    optional.orgWidth = $(optional).width();
-                }
-
-                // Prevent text-selection, object dragging ect.
-                event.preventDefault();
-
-                // Change css styles for the handle
-                $(handle).addClass('active');
-
-                // Show the resize cursor globally
-                $('body').addClass('table-resize');
-
-                // Get mouse and column origin measurements
-                var orgX = event.clientX;
-                var orgWidth = $(column).width();
-
-                // On every mouse move, calculate the new width
-                $(window).mousemove(calculateWidthEvent(column, orgX, orgWidth, optional));
-
-                // Stop dragging as soon as the mouse is released
-                $(window).one('mouseup', unbindEvent(handle));
-            });
-        }
-
-        function calculateWidthEvent(column, orgX, orgWidth, optional) {
-            return function (event) {
-                // Get current mouse position
-                var newX = event.clientX;
-
-                // Use calculator function to calculate new width
-                var diffX = newX - orgX;
-                var newWidth = table.resizer.calculate(orgWidth, diffX);
-
-                // Use restric function to abort potential restriction
-                if (table.resizer.restrict(newWidth)) return;
-
-                // Extra optional column
-                if (table.resizer.intervene) {
-                    var optWidth = table.resizer.intervene.calculator(optional.orgWidth, diffX);
-                    if (table.resizer.intervene.restrict(optWidth)) return;
-                    $(optional).width(optWidth);
-                }
-
-                // Set size
-                $(column).width(newWidth);
-            };
-        }
-
-        function getResizer(scope) {
-            try {
-                var Resizer = $injector.get(scope.mode);
-                return Resizer;
-            } catch (e) {
-                console.error("The resizer " + scope.mode + " was not found");
-                return null;
-            }
-        }
-
-        function unbindEvent(handle) {
-            // Event called at end of drag
-            return function () /*event*/{
-                $(handle).removeClass('active');
-                $(window).unbind('mousemove');
-                $('body').removeClass('table-resize');
-
-                table.resizer.onEndDrag();
-
-                saveColumnSizes();
-            };
-        }
-
-        function saveColumnSizes() {
-            if (!table.cache) table.cache = {};
-
-            $(table.columns).each(function (index, column) {
+        $(table).width('auto');
+        setTimeout(function () {
+            ctrlColumns.each(function (index, column) {
                 var id = $(column).attr('id');
-                if (!id) return;
-                table.cache[id] = table.resizer.saveAttr(column);
-            });
+                var cacheWidth = cache[id];
 
-            resizeStorage.saveTableSizes(table, table.mode, table.cache);
+                $(column).css({ width: cacheWidth });
+            });
+        }, 100);
+        resizer.onTableReady();
+    }
+
+    function initHandle(table, column) {
+        // Prepend a new handle div to the column
+        var handle = $('<div>', {
+            class: 'handle'
+        });
+
+        // var oldContent = angular.element(angular.element(column).html());
+        //
+        //
+        // handle.prepend(oldContent);
+
+        $(column).prepend(handle);
+
+        // Make handle as tall as the table
+        //$(handle).height($(table).height())
+
+        // Use the middleware to decide which columns this handle controls
+        var controlledColumn = resizer.handleMiddleware(handle, column);
+
+        // Bind mousedown, mousemove & mouseup events
+        bindEventToHandle(table, handle, controlledColumn);
+    }
+
+    function bindEventToHandle(table, handle, column) {
+
+        // This event starts the dragging
+        $(handle).mousedown(function (event) {
+            if (isFirstDrag) {
+                resizer.onFirstDrag(column, handle);
+                resizer.onTableReady();
+                isFirstDrag = false;
+            }
+
+            var optional = {};
+            if (resizer.intervene) {
+                optional = resizer.intervene.selector(column);
+                optional.column = optional;
+                optional.orgWidth = $(optional).width();
+            }
+
+            // Prevent text-selection, object dragging ect.
+            event.preventDefault();
+
+            // Change css styles for the handle
+            $(handle).addClass('active');
+
+            // Show the resize cursor globally
+            $('body').addClass('table-resize');
+
+            // Get mouse and column origin measurements
+            var orgX = event.clientX;
+            var orgWidth = $(column).width();
+
+            // On every mouse move, calculate the new width
+            $(window).mousemove(calculateWidthEvent(column, orgX, orgWidth, optional));
+
+            // Stop dragging as soon as the mouse is released
+            $(window).one('mouseup', unbindEvent(handle));
+        });
+    }
+
+    function calculateWidthEvent(column, orgX, orgWidth, optional) {
+        return function (event) {
+            // Get current mouse position
+            var newX = event.clientX;
+
+            // Use calculator function to calculate new width
+            var diffX = newX - orgX;
+            var newWidth = resizer.calculate(orgWidth, diffX);
+
+            // Use restric function to abort potential restriction
+            if (resizer.restrict(newWidth)) return;
+
+            // Extra optional column
+            if (resizer.intervene) {
+                var optWidth = resizer.intervene.calculator(optional.orgWidth, diffX);
+                if (resizer.intervene.restrict(optWidth)) return;
+                $(optional).width(optWidth);
+            }
+
+            // Set size
+            $(column).width(newWidth);
+        };
+    }
+
+    function getResizer(scope) {
+        try {
+            var Resizer = $injector.get(scope.mode);
+            return Resizer;
+        } catch (e) {
+            console.error("The resizer " + scope.mode + " was not found");
+            return null;
         }
+    }
+
+    function unbindEvent(handle) {
+        // Event called at end of drag
+        return function () /*event*/{
+            $(handle).removeClass('active');
+            $(window).unbind('mousemove');
+            $('body').removeClass('table-resize');
+
+            resizer.onEndDrag();
+
+            saveColumnSizes();
+        };
+    }
+
+    function saveColumnSizes() {
+        if (!cache) cache = {};
+
+        $(columns).each(function (index, column) {
+            var id = $(column).attr('id');
+            if (!id) return;
+            cache[id] = resizer.saveAttr(column);
+        });
+
+        resizeStorage.saveTableSizes(table, mode, cache);
     }
 
     // Return this directive as a object literal
@@ -923,7 +933,7 @@ function ListCreator() {
   var paginationTemplate = '\n        <div class="page-select">\n          <div class="btn-group smart-footer-item">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              P\xE1gina: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="search">\n                <input type="number" min="1" step="1" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');" autofocus max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="P\xE1gina" class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>\n              </li>\n              <li class="effect-ripple {{page == ctrl.pageModel ? \'selected\' : \'\'}}" ng-click="ctrl.changePage(page, ctrl.pageSize)" ng-repeat="page in ctrl.getTotalPage()">\n                {{page}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select" ng-show="ctrl.listConfig.itemsPerPage.length > 0">\n          <div class="btn-group smart-footer-item">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              Itens por p\xE1gina: &nbsp; {{ctrl.pageSize}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? \'selected\' : \'\'}}"\n                  ng-click="ctrl.changePage(ctrl.pageModel, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">\n                {{itemPerPage}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select">\n          <div class="smart-footer-item">\n            {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}\n            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="effect-ripple glyphicon glyphicon-chevron-left"></i></button>\n            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="effect-ripple glyphicon glyphicon-chevron-right"></i></button>\n          </div>\n        </div>\n  ';
 
   function formatTableHeader(sortField, title) {
-    var templateWithSort = '\n        <div style="display: flex">\n        <a ng-click="ctrl.doSort(\'' + sortField + '\')" class="th-sort">\n          ' + title + '\n        </a>\n        <span class="sort-caret-span" style="{{ctrl.activeSorted.column  == \'' + sortField + '\' ? \'\': \'opacity: 0.4;\'}}" ng-class="ctrl.activeSorted.direction == \'asc\' ? \'dropup\' : \' \' ">\n          <span class="caret"></span>\n        </span>\n        </div>\n';
+    var templateWithSort = '\n        <a ng-click="ctrl.doSort(\'' + sortField + '\')" class="th-sort">\n          ' + title + '\n          <span style="{{ctrl.activeSorted.column  == \'' + sortField + '\' ? \'\': \'opacity: 0.4;\'}}" ng-class="ctrl.activeSorted.direction == \'asc\' ? \'dropup\' : \' \' ">\n            <span class="caret"></span>\n          </span>\n        </a>';
     return !!sortField ? templateWithSort : title;
   }
 
@@ -941,7 +951,7 @@ function ListCreator() {
     var tableId = arguments[2];
 
     return columnsArray.reduce(function (prev, next, index) {
-      return prev += '\n          <th ng-init="ctrl.checkResizer()" id="' + tableId + '-' + next.name + '" style="' + (next.style ? next.style + ';' : '') + 'text-align: ' + next.alignColumn + '; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? \'\' : \'z-index: 1;\'}}" class="' + (next.size || ' ') + '">\n            <i ng-show="ctrl.isPosssibleLeft(\'' + next.name + '\', ' + index + ')"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn(\'left\', \'' + next.name + '\')"></i>\n            <strong>\n              ' + formatTableHeader(next.sortField, next.title) + '\n            </strong>\n            <i ng-show="ctrl.isPosssibleRight(\'' + next.name + '\', ' + index + ')" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn(\'right\', \'' + next.name + '\')"></i>\n          </th>\n          ';
+      return prev += '\n          <th id="' + tableId + '-' + next.name + '" style="' + next.style + '; text-align: ' + next.alignColumn + '; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? \'\' : \'z-index: 1;\'}}" class="' + (next.size || ' ') + '">\n            <i ng-show="ctrl.isPosssibleLeft(\'' + next.name + '\', ' + index + ')"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn(\'left\', \'' + next.name + '\')"></i>\n            <strong>\n              ' + formatTableHeader(next.sortField, next.title) + '\n            </strong>\n            <i ng-show="ctrl.isPosssibleRight(\'' + next.name + '\', ' + index + ')" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn(\'right\', \'' + next.name + '\')"></i>\n          </th>\n          ';
     }, ' ');
   }
 
@@ -973,7 +983,7 @@ function ListCreator() {
       head.insertBefore(style, head.firstChild);
     }
 
-    return '\n        ' + (config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' ') + '\n        <div class="{{ctrl.listConfig.materialTheme ? \'gmd panel\': \'\'}}">\n          <div class="page-select"\n              ng-show="ctrl.getPossibleColumns().length > 0"\n              style="position: absolute;right: 35px;z-index: 10;top: 15px;">\n                <div class="btn-group smart-footer-item">\n                  <button class="btn btn-default dropdown-toggle "\n                          data-toggle="dropdown"\n                          type="button"\n                          aria-haspopup="true"\n                          aria-expanded="false" style="font-size: 14px;">\n                          <span class="glyphicon glyphicon-plus"></span>\n                  </button>\n                  <ul class="gmd dropdown-menu" style="margin-left: -120px;margin-top: -20px;">\n                    <li style="border-bottom: 1px solid #ddd;">\n                      <label>Adicionar colunas</label>\n                    </li>\n                    <li class="effect-ripple"\n                        ng-repeat="column in ctrl.getPossibleColumns() track by $index"\n                        ng-click="ctrl.addColumn(column)">\n                        {{column.label || column.name}}\n                    </li>\n                  </ul>\n                </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme\n                        && ((ctrl.listConfig.actions.length > 0\n                        || ctrl.listConfig.title)\n                        || ctrl.listConfig.enabledBetweenLines))"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-actions\': \'\'}}">\n              <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>\n              <div class="actions">\n                <div  ng-repeat="action in ctrl.listConfig.actions"\n                      ng-click="action.onClick(ctrl.selectedValues, ctrl.data)"\n                      style="float: left;padding-left: 15px;"\n                      class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"\n                      ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>\n\n                <div style="float: left;padding-left: 15px;" ng-show="ctrl.listConfig.enabledBetweenLines">\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(25)" style="font-size: 14px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(48)" style="font-size: 16px;margin-left: 5px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(60)" style="font-size: 20px;margin-left: 5px;"></i>\n                </div>\n              </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'TOP\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-heading\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n              ' + paginationTemplate + '\n          </div>\n          <div class="{{ctrl.listConfig.materialTheme ? \'panel-body\': \'\'}}" style="padding: 0;">\n            <div class="table-responsive" style="{{ctrl.maxHeight ? \'max-height: \'+ctrl.maxHeight : \'\'}}">\n\n              <table class="' + className + '" ' + (config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' ') + ' id="' + tableId + '">\n                <thead>\n                  <tr>\n                    ' + generateHeader(config, tableId) + '\n                  </tr>\n                </thead>\n                <tbody ng-init="ctrl.checkResizer()">\n                  <tr ng-style="{ \'border-left\': {{ctrl.conditional($value)}} }"\n                      style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'opacity: 0.4;\' : \'\'}}"\n                      class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'row-disabled\' : \'\'}} "\n                      ng-dblclick="ctrl.doubleClick($value)"\n                      ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                      ng-repeat="$value in ctrl.data track by $index"\n                      ng-init="ctrl.checkResizer()"\n                      ng-show="ctrl.visibleRow($value)"\n                      ng-click="ctrl.select($index,$event)">\n                      ' + generateBody(config.columnsConfig) + '\n                  </tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'BOTTOM\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-footer gumga-list-paginable\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n               <div class="signal" ng-show="ctrl.loading"></div>\n              ' + paginationTemplate + '\n          </div>\n        </div>\n        ';
+    return '\n        ' + (config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' ') + '\n        <div class="{{ctrl.listConfig.materialTheme ? \'gmd panel\': \'\'}}">\n          <div class="page-select"\n              ng-show="ctrl.getPossibleColumns().length > 0"\n              style="position: absolute;right: 35px;z-index: 10;top: 15px;">\n                <div class="btn-group smart-footer-item">\n                  <button class="btn btn-default dropdown-toggle "\n                          data-toggle="dropdown"\n                          type="button"\n                          aria-haspopup="true"\n                          aria-expanded="false" style="font-size: 14px;">\n                          <span class="glyphicon glyphicon-plus"></span>\n                  </button>\n                  <ul class="gmd dropdown-menu" style="margin-left: -120px;margin-top: -20px;">\n                    <li style="border-bottom: 1px solid #ddd;">\n                      <label>Adicionar colunas</label>\n                    </li>\n                    <li class="effect-ripple"\n                        ng-repeat="column in ctrl.getPossibleColumns() track by $index"\n                        ng-click="ctrl.addColumn(column)">\n                        {{column.label || column.name}}\n                    </li>\n                  </ul>\n                </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme\n                        && ((ctrl.listConfig.actions.length > 0\n                        || ctrl.listConfig.title)\n                        || ctrl.listConfig.enabledBetweenLines))"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-actions\': \'\'}}">\n              <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>\n              <div class="actions">\n                <div  ng-repeat="action in ctrl.listConfig.actions"\n                      ng-click="action.onClick(ctrl.selectedValues, ctrl.data)"\n                      style="float: left;padding-left: 15px;"\n                      class="{{ctrl.selectedValues.length > 0 ? action.classOnSelectedValues : action.classOnNotSelectedValues}}"\n                      ng-bind-html="ctrl.trustAsHtml(action.icon)"></div>\n\n                <div style="float: left;padding-left: 15px;" ng-show="ctrl.listConfig.enabledBetweenLines">\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(25)" style="font-size: 14px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(48)" style="font-size: 16px;margin-left: 5px;"></i>\n                    <i class="glyphicon glyphicon-menu-hamburger" ng-click="ctrl.handlingLineHeight(60)" style="font-size: 20px;margin-left: 5px;"></i>\n                </div>\n              </div>\n          </div>\n          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'TOP\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-heading\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n              ' + paginationTemplate + '\n          </div>\n          <div class="{{ctrl.listConfig.materialTheme ? \'panel-body\': \'\'}}" style="padding: 0;">\n            <div class="table-responsive" style="{{ctrl.maxHeight ? \'max-height: \'+ctrl.maxHeight : \'\'}}">\n\n              <table class="' + className + '" ' + (config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' ') + ' id="' + tableId + '">\n                <thead>\n                  <tr>\n                    ' + generateHeader(config, tableId) + '\n                  </tr>\n                </thead>\n                <tbody>\n                  <tr ng-style="{ \'border-left\': {{ctrl.conditional($value)}} }"\n                      style="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'opacity: 0.4;\' : \'\'}}"\n                      class="{{ctrl.rowIsDisabled(ctrl.selectedMap[$index].value) ? \'row-disabled\' : \'\'}} "\n                      ng-dblclick="ctrl.doubleClick($value)"\n                      ng-class="ctrl.selectedMap[$index].checkbox ? \'active active-list\' : \'\'"\n                      ng-repeat="$value in ctrl.data track by $index"\n                      ng-show="ctrl.visibleRow($value)"\n                      ng-click="ctrl.select($index,$event)">\n                      ' + generateBody(config.columnsConfig) + '\n                  </tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == \'BOTTOM\' || ctrl.pagePosition.toUpperCase() == \'ALL\')"\n               class="{{ctrl.listConfig.materialTheme ? \'panel-footer gumga-list-paginable\': \'\'}}"\n               style="justify-content: {{ctrl.pageAlign}};">\n               <div class="signal" ng-show="ctrl.loading"></div>\n              ' + paginationTemplate + '\n          </div>\n        </div>\n        ';
   }
 
   return { mountTable: mountTable };
@@ -991,7 +1001,7 @@ angular.module('gumga.list.creator', []).factory('listCreator', ListCreator);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = "\n\nGUMGA_LIST_KEY table.resize th {\n    position: relative;\n    min-width: 10px ;\n}\n\n/**\n  START PERSONALIZE ROWS\n**/\n\nGUMGA_LIST_KEY tr td, GUMGA_LIST_KEY tr th{\n  background-color: #FFFFFF;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n}\n\nGUMGA_LIST_KEY tr:hover td{\n  background-color: HOVER_ROW_COLOR;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n}\n\n/**\n  END PERSONALIZE ROWS\n**/\n\n\nGUMGA_LIST_KEY table th i{\n  display: none;\n}\n\nGUMGA_LIST_KEY table td[contenteditable=\"true\"]{\n  border: 1px solid #175bc1;\n}\n\nGUMGA_LIST_KEY table th i.left{\n  font-size: 10px;\n  color: #ccc;\n  position: absolute;\n  left: 5px;\n  top: 18px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY table th i.right{\n  font-size: 10px;\n  color: #ccc;\n  position: absolute;\n  right: 5px;\n  top: 18px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY table th:hover i{\n  display: block;\n}\n\nGUMGA_LIST_KEY table.resize tr th .handle {\n    width: 2px;\n    height: 100%;\n    position: absolute;\n    top: 0;\n    right: 0px;\n    cursor: ew-resize ;\n    background: #f3f3f3;\n}\n\nGUMGA_LIST_KEY table.resize tr th .handle.active {\n    background: #ddd;\n}\n\n@media only screen and (max-device-width: 480px) {\n\n    GUMGA_LIST_KEY table.resize tr th .handle {\n        display: none;\n    }\n\n}\n\nGUMGA_LIST_KEY .table{\n  margin: 0;\n}\n\nGUMGA_LIST_KEY tr{\n  transition: background-color .2s;\n  height: LINE_HEIGHT_VALUE;\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n}\n\nGUMGA_LIST_KEY tr th a:hover{\n  color: #525252;\n  text-decoration: none;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .panel-footer, GUMGA_LIST_KEY .panel-heading{\n  padding: 10px;\n  text-align: right;\n  background-color: #fff;\n  border-top: 0;\n  padding-bottom: 0;\n}\n\nGUMGA_LIST_KEY .panel-actions{\n  border-bottom: 1px solid transparent;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n  flex-wrap: wrap-reverse;\n  box-sizing: border-box;\n  font-size: 12px;\n  color: rgba(0,0,0,.87);\n  background-color: #fff;\n  padding: 10px 24px;\n  display: flex;\n  padding-top: 0;\n  padding-bottom: 0;\n  height: 64px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\nGUMGA_LIST_KEY .panel-actions .actions{\n  margin-left: auto;\n  padding-top: 10px;\n}\n\nGUMGA_LIST_KEY .panel-actions .actions i,  GUMGA_LIST_KEY .panel-actions .actions span{\n  font-size: 20px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .table>thead>tr>th{\n  border: none;\n  vertical-align: middle;\n  position: relative;\n}\n\n\n.effect-ripple {\n  position: relative;\n  overflow: hidden;\n  transform: translate3d(0, 0, 0);\n}\n.effect-ripple:after {\n  content: \"\";\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);\n  background-repeat: no-repeat;\n  background-position: 50%;\n  transform: scale(10, 10);\n  opacity: 0;\n  transition: transform .5s, opacity 1s;\n}\n.effect-ripple:active:after {\n  transform: scale(0, 0);\n  opacity: .2;\n  transition: 0s;\n}\n\nGUMGA_LIST_KEY .signal {\n  border: 5px solid #333;\n  border-radius: 30px;\n  height: 30px;\n  left: 35px;\n  opacity: 0;\n  position: absolute;\n  width: 30px;\n  animation: pulsate 1s ease-out;\n  animation-iteration-count: infinite;\n}\n\n@keyframes pulsate {\n    0% {\n      transform: scale(.1);\n      opacity: 0.0;\n    }\n    50% {\n      opacity: 1;\n    }\n    100% {\n      transform: scale(1.2);\n      opacity: 0;\n    }\n}\n\nGUMGA_LIST_KEY .panel .panel-body{\n  margin: 0 ;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr.active>td,\nGUMGA_LIST_KEY .table>tbody>tr.active>th{\n   background: ACTIVE_ROW_COLOR;\n   border: none;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr.active:hover>td,\nGUMGA_LIST_KEY .table>tbody>tr.active>:hover > th{\n  background: HOVER_ROW_COLOR ;\n}\n\n\nGUMGA_LIST_KEY .smart-footer-item button{\n  border: none ;\n  outline: none ;\n  background: #fff;\n  color: rgba(0,0,0,.54);\n  font-size: 13px;\n  padding-top: 0;\n  padding-bottom: 0;\n}\n\nGUMGA_LIST_KEY .smart-footer-item > button:hover, GUMGA_LIST_KEY .smart-footer-item > button:active{\n  background: #fff;\n  outline: none ;\n  color: #000000;\n  box-shadow: none;\n}\n\nGUMGA_LIST_KEY .btn-default.active.focus, .btn-default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover{\n  box-shadow: none;\n  background: #fff;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul{\n  margin-top: -32px;\n  width: 136px;\n  max-width: 136px;\n  min-height: 48px;\n  max-height: 256px;\n  overflow-y: auto;\n  padding: 0;\n  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);\n  transition: all .4s cubic-bezier(.25,.8,.25,1);\n  border-radius: 2px;\n  border: none;\n}\n\nGUMGA_LIST_KEY .smart-footer-item{\n  font-size: 13px;\n}\n\nGUMGA_LIST_KEY  .dropdown-menu {\n    -webkit-transition: all .5s ease-out;\n    transition: all .5s ease-out;\n    transform: rotateX(90deg);\n    transform-origin: top;\n    opacity: 0;\n    display: block;\n}\n\nGUMGA_LIST_KEY  .open .dropdown-menu {\n    opacity: 1;\n    transform: rotateX(0deg);\n    transform-origin: top;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li{\n  cursor: pointer;\n  padding: 16px 16px;\n  font-size: 12px;\n  color: rgba(0,0,0,0.87);\n  background: #F5F5F5;\n  align-items: center;\n  height: 48px;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.search{\n  margin: 0;\n  padding: 0;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.search input{\n  border: none;\n  border-radius: 0;\n  box-shadow: none;\n  background: #fff;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.selected{\n  color: rgb(33,150,243);\n}\n\nGUMGA_LIST_KEY .panel .panel-footer, GUMGA_LIST_KEY .panel .panel-heading{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  -webkit-justify-content: flex-end;\n  -ms-flex-pack: end;\n  justify-content: flex-end;\n  -webkit-flex-wrap: wrap-reverse;\n  -ms-flex-wrap: wrap-reverse;\n  flex-wrap: wrap-reverse;\n  box-sizing: border-box;\n  padding: 0px 24px;\n  font-size: 12px;\n  color: rgba(0,0,0,.54);\n  border-top: 1px rgba(0,0,0,.12) solid;\n}\n\nGUMGA_LIST_KEY .panel .panel-footer .page-select, GUMGA_LIST_KEY .panel .panel-heading .page-select{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  height: 56px;\n}\n\nGUMGA_LIST_KEY .input-inline-edit{\n    background: transparent ;\n    border: none ;\n    outline: 1px solid #ccc ;\n    padding-left: 1px ;\n    padding-right: 1px ;\n    max-width: 100% ;\n    width: 100% ;\n}\n\nGUMGA_LIST_KEY td[class*=\"td-checkbox\"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[class*=\"ng-binding\"]{\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n  color: rgba(0,0,0,.87);\n  font-size: 13px;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n  vertical-align: middle;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{\n  padding: 10px 5px 10px 24px !important;\n  \n}\n\n\nGUMGA_LIST_KEY table td:not(:empty){\n   padding: 0px 24px 0px 24px !important;\n   vertical-align: middle !important;\n}\n\nGUMGA_LIST_KEY tr td < span:nth-child(n+10) {\n    background-color:red ;\n}\n\nGUMGA_LIST_KEY .table-responsive{\n  border: none;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"], .pure-radiobutton input[type=\"checkbox\"], .pure-checkbox input[type=\"radio\"], .pure-radiobutton input[type=\"radio\"] {\n  border: 0;\n  clip: rect(0 0 0 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:focus + label:before, .pure-checkbox input[type=\"radio\"]:focus + label:before, .pure-radiobutton input[type=\"radio\"]:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:hover + label:before, .pure-checkbox input[type=\"radio\"]:hover + label:before, .pure-radiobutton input[type=\"radio\"]:hover + label:before {\n  border-color: CHECKBOX_COLOR;\n  background-color: #f2f2f2;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:active + label:before, .pure-radiobutton input[type=\"checkbox\"]:active + label:before, .pure-checkbox input[type=\"radio\"]:active + label:before, .pure-radiobutton input[type=\"radio\"]:active + label:before { transition-duration: 0s; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label, .pure-radiobutton input[type=\"checkbox\"] + label, .pure-checkbox input[type=\"radio\"] + label, .pure-radiobutton input[type=\"radio\"] + label {\n  position: relative;\n  padding-left: 2em;\n  vertical-align: middle;\n  user-select: none;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:before, .pure-radiobutton input[type=\"checkbox\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before {\n  box-sizing: content-box;\n  content: '';\n  color: CHECKBOX_COLOR;\n  position: absolute;\n  top: 50%;\n  left: 0;\n  width: 14px;\n  height: 14px;\n  margin-top: -9px;\n  border: 2px solid CHECKBOX_COLOR;\n  text-align: center;\n  transition: all 0.4s ease;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after {\n  box-sizing: content-box;\n  content: '';\n  background-color: CHECKBOX_COLOR;\n  position: absolute;\n  top: 50%;\n  left: 4px;\n  width: 10px;\n  height: 10px;\n  margin-top: -5px;\n  transform: scale(0);\n  transform-origin: 50%;\n  transition: transform 200ms ease-out;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled + label:before, .pure-checkbox input[type=\"radio\"]:disabled + label:before, .pure-radiobutton input[type=\"radio\"]:disabled + label:before { border-color: #cccccc; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:focus + label:before, .pure-checkbox input[type=\"radio\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:hover + label:before, .pure-checkbox input[type=\"radio\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:hover + label:before { background-color: inherit; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:checked + label:before, .pure-checkbox input[type=\"radio\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:checked + label:before { background-color: #cccccc; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after {\n  background-color: transparent;\n  top: 50%;\n  left: 4px;\n  width: 8px;\n  height: 3px;\n  margin-top: -4px;\n  border-style: solid;\n  border-color: #ffffff;\n  border-width: 0 0 3px 3px;\n  border-image: none;\n  transform: rotate(-45deg) scale(0);\n}\n\nGUMGA_LIST_KEY .pure-checkbox{\n  width: 18px;\n  display: inline-block;\n}\n\nGUMGA_LIST_KEY .sort-caret-span{\n    display: flex;\n    align-items: center;\n    margin-right: 17px;\n    margin-left: 5px;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after {\n  content: '';\n  transform: rotate(-45deg) scale(1);\n  transition: transform 200ms ease-out;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"]:checked + label:before, .pure-radiobutton input[type=\"radio\"]:checked + label:before {\n  animation: borderscale 300ms ease-in;\n  background-color: white;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"]:checked + label:after, .pure-radiobutton input[type=\"radio\"]:checked + label:after { transform: scale(1); }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after { border-radius: 50%; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:checked + label:before {\n  animation: borderscale 200ms ease-in;\n  background: CHECKBOX_COLOR;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after { transform: rotate(-45deg) scale(1); }\n\n@keyframes\nborderscale {  50% {\n box-shadow: 0 0 0 2px CHECKBOX_COLOR;\n}\n}\n\n\n";
+exports.default = "\n\nGUMGA_LIST_KEY table.resize th {\n    position: relative;\n    min-width: 10px ;\n}\n\n/**\n  START PERSONALIZE ROWS\n**/\n\nGUMGA_LIST_KEY tr td, GUMGA_LIST_KEY tr th{\n  background-color: #FFFFFF;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n}\n\nGUMGA_LIST_KEY tr:hover td{\n  background-color: HOVER_ROW_COLOR;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n}\n\n/**\n  END PERSONALIZE ROWS\n**/\n\n\nGUMGA_LIST_KEY table th i{\n  display: none;\n}\n\nGUMGA_LIST_KEY table td[contenteditable=\"true\"]{\n  border: 1px solid #175bc1;\n}\n\nGUMGA_LIST_KEY table th i.left{\n  font-size: 10px;\n  color: #ccc;\n  position: absolute;\n  left: 5px;\n  top: 18px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY table th i.right{\n  font-size: 10px;\n  color: #ccc;\n  position: absolute;\n  right: 5px;\n  top: 18px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY table th:hover i{\n  display: block;\n}\n\nGUMGA_LIST_KEY table.resize tr th .handle {\n    width: 2px;\n    height: 100%;\n    position: absolute;\n    top: 0;\n    right: 0px;\n    cursor: ew-resize ;\n    background: #f3f3f3;\n}\n\nGUMGA_LIST_KEY table.resize tr th .handle.active {\n    background: #ddd;\n}\n\n@media only screen and (max-device-width: 480px) {\n\n    GUMGA_LIST_KEY table.resize tr th .handle {\n        display: none;\n    }\n\n}\n\nGUMGA_LIST_KEY .table{\n  margin: 0;\n}\n\nGUMGA_LIST_KEY tr{\n  transition: background-color .2s;\n  height: LINE_HEIGHT_VALUE;\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n}\n\nGUMGA_LIST_KEY tr th a:hover{\n  color: #525252;\n  text-decoration: none;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .panel-footer, GUMGA_LIST_KEY .panel-heading{\n  padding: 10px;\n  text-align: right;\n  background-color: #fff;\n  border-top: 0;\n  padding-bottom: 0;\n}\n\nGUMGA_LIST_KEY .panel-actions{\n  border-bottom: 1px solid transparent;\n  border-top-left-radius: 3px;\n  border-top-right-radius: 3px;\n  flex-wrap: wrap-reverse;\n  box-sizing: border-box;\n  font-size: 12px;\n  color: rgba(0,0,0,.87);\n  background-color: #fff;\n  padding: 10px 24px;\n  display: flex;\n  padding-top: 0;\n  padding-bottom: 0;\n  height: 64px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\nGUMGA_LIST_KEY .panel-actions .actions{\n  margin-left: auto;\n  padding-top: 10px;\n}\n\nGUMGA_LIST_KEY .panel-actions .actions i,  GUMGA_LIST_KEY .panel-actions .actions span{\n  font-size: 20px;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .table>thead>tr>th{\n  border: none;\n  vertical-align: middle;\n  position: relative;\n}\n\n\n.effect-ripple {\n  position: relative;\n  overflow: hidden;\n  transform: translate3d(0, 0, 0);\n}\n.effect-ripple:after {\n  content: \"\";\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);\n  background-repeat: no-repeat;\n  background-position: 50%;\n  transform: scale(10, 10);\n  opacity: 0;\n  transition: transform .5s, opacity 1s;\n}\n.effect-ripple:active:after {\n  transform: scale(0, 0);\n  opacity: .2;\n  transition: 0s;\n}\n\nGUMGA_LIST_KEY .signal {\n  border: 5px solid #333;\n  border-radius: 30px;\n  height: 30px;\n  left: 35px;\n  opacity: 0;\n  position: absolute;\n  width: 30px;\n  animation: pulsate 1s ease-out;\n  animation-iteration-count: infinite;\n}\n\n@keyframes pulsate {\n    0% {\n      transform: scale(.1);\n      opacity: 0.0;\n    }\n    50% {\n      opacity: 1;\n    }\n    100% {\n      transform: scale(1.2);\n      opacity: 0;\n    }\n}\n\nGUMGA_LIST_KEY .panel .panel-body{\n  margin: 0 ;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr.active>td,\nGUMGA_LIST_KEY .table>tbody>tr.active>th{\n   background: ACTIVE_ROW_COLOR;\n   border: none;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr.active:hover>td,\nGUMGA_LIST_KEY .table>tbody>tr.active>:hover > th{\n  background: HOVER_ROW_COLOR ;\n}\n\n\nGUMGA_LIST_KEY .smart-footer-item button{\n  border: none ;\n  outline: none ;\n  background: #fff;\n  color: rgba(0,0,0,.54);\n  font-size: 13px;\n  padding-top: 0;\n  padding-bottom: 0;\n}\n\nGUMGA_LIST_KEY .smart-footer-item > button:hover, GUMGA_LIST_KEY .smart-footer-item > button:active{\n  background: #fff;\n  outline: none ;\n  color: #000000;\n  box-shadow: none;\n}\n\nGUMGA_LIST_KEY .btn-default.active.focus, .btn-default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover{\n  box-shadow: none;\n  background: #fff;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul{\n  margin-top: -32px;\n  width: 136px;\n  max-width: 136px;\n  min-height: 48px;\n  max-height: 256px;\n  overflow-y: auto;\n  padding: 0;\n  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);\n  transition: all .4s cubic-bezier(.25,.8,.25,1);\n  border-radius: 2px;\n  border: none;\n}\n\nGUMGA_LIST_KEY .smart-footer-item{\n  font-size: 13px;\n}\n\nGUMGA_LIST_KEY  .dropdown-menu {\n    -webkit-transition: all .5s ease-out;\n    transition: all .5s ease-out;\n    transform: rotateX(90deg);\n    transform-origin: top;\n    opacity: 0;\n    display: block;\n}\n\nGUMGA_LIST_KEY  .open .dropdown-menu {\n    opacity: 1;\n    transform: rotateX(0deg);\n    transform-origin: top;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li{\n  cursor: pointer;\n  padding: 16px 16px;\n  font-size: 12px;\n  color: rgba(0,0,0,0.87);\n  background: #F5F5F5;\n  align-items: center;\n  height: 48px;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.search{\n  margin: 0;\n  padding: 0;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.search input{\n  border: none;\n  border-radius: 0;\n  box-shadow: none;\n  background: #fff;\n}\n\nGUMGA_LIST_KEY .smart-footer-item ul li.selected{\n  color: rgb(33,150,243);\n}\n\nGUMGA_LIST_KEY .panel .panel-footer, GUMGA_LIST_KEY .panel .panel-heading{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  -webkit-justify-content: flex-end;\n  -ms-flex-pack: end;\n  justify-content: flex-end;\n  -webkit-flex-wrap: wrap-reverse;\n  -ms-flex-wrap: wrap-reverse;\n  flex-wrap: wrap-reverse;\n  box-sizing: border-box;\n  padding: 0px 24px;\n  font-size: 12px;\n  color: rgba(0,0,0,.54);\n  border-top: 1px rgba(0,0,0,.12) solid;\n}\n\nGUMGA_LIST_KEY .panel .panel-footer .page-select, GUMGA_LIST_KEY .panel .panel-heading .page-select{\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-align-items: center;\n  -ms-flex-align: center;\n  align-items: center;\n  height: 56px;\n}\n\nGUMGA_LIST_KEY .input-inline-edit{\n    background: transparent ;\n    border: none ;\n    outline: 1px solid #ccc ;\n    padding-left: 1px ;\n    padding-right: 1px ;\n    max-width: 100% ;\n    width: 100% ;\n}\n\nGUMGA_LIST_KEY td[class*=\"td-checkbox\"], GUMGA_LIST_KEY th, GUMGA_LIST_KEY td[class*=\"ng-binding\"]{\n  font-family: Roboto,\"Helvetica Neue\",sans-serif;\n  color: rgba(0,0,0,.87);\n  font-size: 13px;\n  border-top: 1px solid rgba(168, 159, 159, 0.12);\n  vertical-align: middle;\n}\n\nGUMGA_LIST_KEY .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{\n  padding: 0px 0px 0px 24px !important;\n}\n\n\nGUMGA_LIST_KEY table td:not(:empty){\n   padding: 0px 24px 0px 24px !important;\n   vertical-align: middle !important;\n}\n\nGUMGA_LIST_KEY tr td < span:nth-child(n+10) {\n    background-color:red ;\n}\n\nGUMGA_LIST_KEY .table-responsive{\n  border: none;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"], .pure-radiobutton input[type=\"checkbox\"], .pure-checkbox input[type=\"radio\"], .pure-radiobutton input[type=\"radio\"] {\n  border: 0;\n  clip: rect(0 0 0 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:focus + label:before, .pure-checkbox input[type=\"radio\"]:focus + label:before, .pure-radiobutton input[type=\"radio\"]:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:hover + label:before, .pure-checkbox input[type=\"radio\"]:hover + label:before, .pure-radiobutton input[type=\"radio\"]:hover + label:before {\n  border-color: CHECKBOX_COLOR;\n  background-color: #f2f2f2;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:active + label:before, .pure-radiobutton input[type=\"checkbox\"]:active + label:before, .pure-checkbox input[type=\"radio\"]:active + label:before, .pure-radiobutton input[type=\"radio\"]:active + label:before { transition-duration: 0s; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label, .pure-radiobutton input[type=\"checkbox\"] + label, .pure-checkbox input[type=\"radio\"] + label, .pure-radiobutton input[type=\"radio\"] + label {\n  position: relative;\n  padding-left: 2em;\n  vertical-align: middle;\n  user-select: none;\n  cursor: pointer;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:before, .pure-radiobutton input[type=\"checkbox\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before {\n  box-sizing: content-box;\n  content: '';\n  color: CHECKBOX_COLOR;\n  position: absolute;\n  top: 50%;\n  left: 0;\n  width: 14px;\n  height: 14px;\n  margin-top: -9px;\n  border: 2px solid CHECKBOX_COLOR;\n  text-align: center;\n  transition: all 0.4s ease;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after {\n  box-sizing: content-box;\n  content: '';\n  background-color: CHECKBOX_COLOR;\n  position: absolute;\n  top: 50%;\n  left: 4px;\n  width: 10px;\n  height: 10px;\n  margin-top: -5px;\n  transform: scale(0);\n  transform-origin: 50%;\n  transition: transform 200ms ease-out;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled + label:before, .pure-checkbox input[type=\"radio\"]:disabled + label:before, .pure-radiobutton input[type=\"radio\"]:disabled + label:before { border-color: #cccccc; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:focus + label:before, .pure-checkbox input[type=\"radio\"]:disabled:focus + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:focus + label:before, .pure-checkbox input[type=\"checkbox\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:hover + label:before, .pure-checkbox input[type=\"radio\"]:disabled:hover + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:hover + label:before { background-color: inherit; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:disabled:checked + label:before, .pure-checkbox input[type=\"radio\"]:disabled:checked + label:before, .pure-radiobutton input[type=\"radio\"]:disabled:checked + label:before { background-color: #cccccc; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"] + label:after, .pure-radiobutton input[type=\"checkbox\"] + label:after {\n  background-color: transparent;\n  top: 50%;\n  left: 4px;\n  width: 8px;\n  height: 3px;\n  margin-top: -4px;\n  border-style: solid;\n  border-color: #ffffff;\n  border-width: 0 0 3px 3px;\n  border-image: none;\n  transform: rotate(-45deg) scale(0);\n}\n\nGUMGA_LIST_KEY .pure-checkbox{\n  width: 18px;\n  display: inline-block;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after {\n  content: '';\n  transform: rotate(-45deg) scale(1);\n  transition: transform 200ms ease-out;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"]:checked + label:before, .pure-radiobutton input[type=\"radio\"]:checked + label:before {\n  animation: borderscale 300ms ease-in;\n  background-color: white;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"]:checked + label:after, .pure-radiobutton input[type=\"radio\"]:checked + label:after { transform: scale(1); }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"radio\"] + label:before, .pure-radiobutton input[type=\"radio\"] + label:before, .pure-checkbox input[type=\"radio\"] + label:after, .pure-radiobutton input[type=\"radio\"] + label:after { border-radius: 50%; }\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:before, .pure-radiobutton input[type=\"checkbox\"]:checked + label:before {\n  animation: borderscale 200ms ease-in;\n  background: CHECKBOX_COLOR;\n}\n\nGUMGA_LIST_KEY .pure-checkbox input[type=\"checkbox\"]:checked + label:after, .pure-radiobutton input[type=\"checkbox\"]:checked + label:after { transform: rotate(-45deg) scale(1); }\n\n@keyframes\nborderscale {  50% {\n box-shadow: 0 0 0 2px CHECKBOX_COLOR;\n}\n}\n\n\n";
 
 /***/ }),
 /* 4 */
@@ -1391,15 +1401,14 @@ function List($compile, listCreator) {
         }
         ctrl.pageSize = itensPerPage || ctrl.pageSize;
         ctrl.pageModel = page || ctrl.pageModel;
-
-        ctrl.onPageChange({ page: page, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
+        ctrl.onPageChange({ page: page, pageSize: ctrl.pageSize });
       }
     };
 
     ctrl.previousPage = function () {
       if (ctrl.onPageChange && ctrl.existsPreviousPage()) {
         activeLoading();
-        ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
+        ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize });
         ctrl.pageModel = ctrl.pageModel - 1;
       }
     };
@@ -1407,7 +1416,7 @@ function List($compile, listCreator) {
     ctrl.nextPage = function () {
       if (ctrl.onPageChange && ctrl.existsNextPage()) {
         activeLoading();
-        ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
+        ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize });
         ctrl.pageModel = ctrl.pageModel + 1;
       }
     };
@@ -1430,7 +1439,7 @@ function List($compile, listCreator) {
       if (evt.keyCode == 13) {
         if (ctrl.onPageChange && Number(evt.target.value) <= Math.ceil(ctrl.count / ctrl.pageSize) && evt.target.value != ctrl.pageModel) {
           activeLoading();
-          ctrl.onPageChange({ page: evt.target.value, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
+          ctrl.onPageChange({ page: evt.target.value, pageSize: ctrl.pageSize });
           ctrl.pageModel = Number(evt.target.value);
         }
       }
@@ -1581,12 +1590,6 @@ function List($compile, listCreator) {
       return window.sessionStorage.getItem('ngColumnOrder.gumga-list-' + ctrl.getTableId());
     };
 
-    ctrl.checkResizer = function () {
-      if ($element.find('table')[0] && $element.find('table')[0].loadResize) {
-        $element.find('table')[0].loadResize();
-      }
-    };
-
     ctrl.visibleRow = function (row) {
       return !row['LIST-LOADING'];
     };
@@ -1611,8 +1614,7 @@ function List($compile, listCreator) {
       'count': '=?',
       'pageModel': '=?',
       'onPageChange': '&?',
-      'onRowChange': '&?',
-      'activeSorted': '=?'
+      'onRowChange': '&?'
     },
     bindToController: true,
     controllerAs: 'ctrl',
