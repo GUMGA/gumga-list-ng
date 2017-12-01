@@ -24,7 +24,7 @@
       <br>
       
       <div class="col-md-12">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <gumga-list data="pessoa.data"
                       name="pessoa2"
                       configuration="tableConfig"
@@ -33,25 +33,9 @@
                       page-align="flex-end"
                       count="pessoa.count"
                       page-model="page"
-                      sort="pessoa.methods.sort(field, dir)"
+                      sort="createQuery(page, pessoa.pageSize, field, dir)"
                       on-row-change="update(row)"
-                      on-page-change="pessoa.methods.get(page, pageSize)">
-          </gumga-list>
-        </div>
-        <div class="col-md-6">
-          {{ola}}
-          <gumga-list data="pessoa.data"
-                      name="teste"
-                      configuration="tableConfig2"
-                      page-size="pessoa.pageSize"
-                      page-position="bottom"
-                      page-align="flex-end"
-                      active-sorted="ola"
-                      count="pessoa.count"
-                      page-model="page"
-                      sort="pessoa.methods.sort(field, dir)"
-                      on-row-change="update(row)"
-                      on-page-change="pessoa.methods.get(page, pageSize)">
+                      on-page-change="createQuery(page, pageSize, field, dir)">
           </gumga-list>
         </div>
       </div>
@@ -80,12 +64,13 @@
   <script src="node_modules/angular/angular.min.js"></script>
   <script src="node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
   <script src="node_modules/gumga-controller-ng/dist/gumga-controller.min.js"></script>
+  <script src="node_modules/gumga-gquery-ng/dist/gumga-gquery.min.js"></script>
   <script src="dist/gumga-list.js"></script>
 
   <script>
     angular.module('yourApp', ['gumga.rest','gumga.controller','gumga.list'])
       .config(function ($httpProvider) {
-        $httpProvider.defaults.headers.common['gumgaToken'] = 'algum_token'
+        $httpProvider.defaults.headers.common['gumgaToken'] = 'eterno'
         // $httpProvider.defaults.headers.common['gumgaToken'] = 'homologacaokids'
         // $httpProvider.defaults.headers.common['gumgaToken'] = 'batistakids'
       })
@@ -96,10 +81,21 @@
 
         gumgaController.createRestMethods($scope, PessoaService, 'pessoa');
 
-        // $scope.pessoa.pageSize = 5;
 
-        // $scope.pessoa.methods.getLatestOperation();
-        $scope.pessoa.methods.get();
+        $scope.createQuery = function(page, pageSize, field, dir){
+            $scope.pessoa.methods.createQuery()
+                .gQuery(
+                  new GQuery(new Criteria('login', ComparisonOperator.CONTAINS, 'ma'))
+                )
+                .page(page)
+                .pageSize(pageSize)
+                .sort(field, dir)
+                .send()
+        }
+
+        $scope.createQuery(1, 10, 'name', 'desc');
+        
+      
 
         $scope.update = function(){}
 

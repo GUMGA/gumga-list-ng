@@ -1182,7 +1182,7 @@ function List($compile, listCreator) {
     function updateMap() {
       var newVal = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
-      ctrl.selectedMap = {};
+      ctrl.selectedMap = ctrl.selectedMap || {};
       newVal.forEach(function (value, index) {
         return ctrl.selectedMap[index] = { checkbox: false, value: value };
       });

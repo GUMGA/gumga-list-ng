@@ -1,13 +1,14 @@
 {
   "name": "gumga-list-ng",
-  "version": "1.13.0",
+  "version": "1.14.1",
   "description": "Gumga List",
   "main": "./src/list.js",
   "directories": {
     "example": "example"
   },
   "dependencies": {
-    "angular": "1.5.8"
+    "angular": "1.5.8",
+    "gumga-gquery-ng": "^1.1.2"
   },
   "babel": {
     "presets": [
@@ -24,8 +25,8 @@
     "css-loader": "^0.28.2",
     "extract-text-webpack-plugin": "^2.1.0",
     "file-loader": "^0.11.1",
-    "gumga-controller-ng": "^1.1.5",
-    "gumga-rest-ng": "^1.1.5",
+    "gumga-controller-ng": "*",
+    "gumga-rest-ng": "*",
     "script-loader": "^0.7.0",
     "uglifyjs-webpack-plugin": "^0.4.3",
     "unminified-webpack-plugin": "^1.1.1",

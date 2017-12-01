@@ -151,7 +151,7 @@ function List($compile, listCreator){
       }
 
       function updateMap(newVal = []){
-        ctrl.selectedMap = {};
+        ctrl.selectedMap = ctrl.selectedMap || {};
         newVal.forEach((value, index) => (ctrl.selectedMap[index] = { checkbox: false, value }))
         updateSelectedValues()
       }
