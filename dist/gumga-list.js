@@ -1184,7 +1184,7 @@ function List($compile, listCreator) {
 
       ctrl.selectedMap = ctrl.selectedMap || {};
       newVal.forEach(function (value, index) {
-        return ctrl.selectedMap[index] = { checkbox: false, value: value };
+        ctrl.selectedMap[index] = ctrl.selectedMap[index] || { checkbox: false, value: value };
       });
       updateSelectedValues();
     }
