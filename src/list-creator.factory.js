@@ -89,11 +89,34 @@ function ListCreator() {
     return columnsArray.reduce((prev, next, index) => {
       return prev += `
           <th ng-init="ctrl.checkResizer()" id="${tableId}-${next.name}" style="${next.style ? next.style+';' : ''}text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
-            <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
-            <strong>
-              ${formatTableHeader(next.sortField, next.title)}
-            </strong>
-            <i ng-show="ctrl.isPosssibleRight('${next.name}', ${index})" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn('right', '${next.name}')"></i>
+            <div class="column-container" ng-show="!ctrl.listConfig.columnsConfig[${index}].searching">
+              <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
+                ${formatTableHeader(next.sortField, next.title)} 
+              <i ng-show="ctrl.isPosssibleRight('${next.name}', ${index})" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn('right', '${next.name}')"></i>
+            
+              <div class="column-search-container" ng-show="ctrl.listConfig.columnsConfig[${index}].activeSearch">
+                <button ng-click="ctrl.searchWithGQuery('${next.name}', $event)">
+                  <em class="material-icons">search</em>
+                </button>
+              </div>
+            </div>
+            <div class="column-container-search" ng-show="ctrl.listConfig.columnsConfig[${index}].searching">
+              <div class="input-group">
+                <span class="input-group-addon" id="basic-addon1" ng-click="ctrl.executeSearch(ctrl.listConfig.columnsConfig[${index}], $event)">
+                  <em class="material-icons">search</em>
+                </span>
+
+                <input  type="text" 
+                        autofocus
+                        placeholder="{{ctrl.listConfig.columnsConfig[${index}].searchPlaceholder}}" 
+                        ng-keydown="ctrl.searchByColumn(ctrl.listConfig.columnsConfig[${index}], $event)"
+                        ng-model="ctrl.listConfig.columnsConfig[${index}].searchValue"/>
+
+                <span class="input-group-addon" id="basic-addon1" ng-click="ctrl.removeSearch(ctrl.listConfig.columnsConfig[${index}], $event)">
+                  <em class="material-icons">clear</em>
+                </span>
+              </div>
+            </div>
           </th>
           `
     }, ' ')
@@ -149,7 +172,7 @@ function ListCreator() {
 
     return `
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
-        <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}">
+        <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}" style="position: relative;">
           <div class="page-select"
               ng-show="ctrl.getPossibleColumns().length > 0"
               style="position: absolute;right: 35px;z-index: 10;top: 15px;">

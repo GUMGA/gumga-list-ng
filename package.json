@@ -1,6 +1,6 @@
 {
   "name": "gumga-list-ng",
-  "version": "1.14.2",
+  "version": "1.15.0",
   "description": "Gumga List",
   "main": "./src/list.js",
   "directories": {
@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "angular": "1.5.8",
+    "gumga-controller-ng": "^1.9.3",
     "gumga-gquery-ng": "^1.1.2"
   },
   "babel": {

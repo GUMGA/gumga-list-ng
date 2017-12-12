@@ -1,9 +1,87 @@
 export default `
 
-GUMGA_LIST_KEY table.resize th {
-    position: relative;
-    min-width: 10px ;
+GUMGA_LIST_KEY table th .column-container, GUMGA_LIST_KEY table th a.th-sort{
+  color: rgba(0,0,0,.54);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: Roboto,"Helvetica Neue",sans-serif;
 }
+
+GUMGA_LIST_KEY table thead tr{
+  border: none;
+}
+
+GUMGA_LIST_KEY table.resize th {
+  position: relative;
+  min-width: 10px ;
+}
+
+GUMGA_LIST_KEY .panel.gmd{
+  padding: 0;
+}
+
+GUMGA_LIST_KEY .column-search-container{
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+GUMGA_LIST_KEY .column-search-container button{
+  margin-right: 25px;
+  border: none;
+  background: transparent;
+  outline: none;
+  opacity: 0;
+  pointer-events: none;
+  color: #ccc;
+}
+
+GUMGA_LIST_KEY .column-container-search{
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+
+GUMGA_LIST_KEY .column-container-search .input-group{
+  height: 100%;
+}
+
+GUMGA_LIST_KEY .column-container-search .input-group .input-group-addon{
+  border: none;
+  background: transparent;
+}
+
+GUMGA_LIST_KEY .column-container-search input{
+  height: 100%;
+  width: 100%;
+  border: none;
+  outline: none;
+  color: #666;
+  padding: 0 15px 0 15px;
+}
+
+GUMGA_LIST_KEY em.material-icons{
+  font-size: 18px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+GUMGA_LIST_KEY .column-container-search .input-group em[class~="fa-search"]{
+  font-size: 14px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+GUMGA_LIST_KEY .table>thead>tr>th:hover .column-search-container button{
+  opacity: 1;
+  pointer-events: all;
+}
+
 
 /**
   START PERSONALIZE ROWS
@@ -62,6 +140,7 @@ GUMGA_LIST_KEY table.resize tr th .handle {
     right: 0px;
     cursor: ew-resize ;
     background: #f3f3f3;
+    z-index: 9999999;
 }
 
 GUMGA_LIST_KEY table.resize tr th .handle.active {
@@ -84,6 +163,7 @@ GUMGA_LIST_KEY tr{
   transition: background-color .2s;
   height: LINE_HEIGHT_VALUE;
   font-family: Roboto,"Helvetica Neue",sans-serif;
+  border-top: 1px solid rgba(168, 159, 159, 0.12);
 }
 
 GUMGA_LIST_KEY tr th a:hover{
@@ -133,6 +213,7 @@ GUMGA_LIST_KEY .table>thead>tr>th{
   border: none;
   vertical-align: middle;
   position: relative;
+  font-weight: 500;
 }
 
 
@@ -213,6 +294,7 @@ GUMGA_LIST_KEY .smart-footer-item button{
   font-size: 13px;
   padding-top: 0;
   padding-bottom: 0;
+  box-shadow: none;
 }
 
 GUMGA_LIST_KEY .smart-footer-item > button:hover, GUMGA_LIST_KEY .smart-footer-item > button:active{
@@ -374,7 +456,7 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"]:active + label:before, .pur
 GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label, .pure-radiobutton input[type="checkbox"] + label, .pure-checkbox input[type="radio"] + label, .pure-radiobutton input[type="radio"] + label {
   position: relative;
   padding-left: 2em;
-  vertical-align: middle;
+  vertical-align: middle;   
   user-select: none;
   cursor: pointer;
 }
@@ -391,6 +473,7 @@ GUMGA_LIST_KEY .pure-checkbox input[type="checkbox"] + label:before, .pure-radio
   margin-top: -9px;
   border: 2px solid CHECKBOX_COLOR;
   text-align: center;
+  border-radius: 3px;
   transition: all 0.4s ease;
 }
 
