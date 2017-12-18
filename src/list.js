@@ -295,6 +295,14 @@ function List($compile, listCreator) {
       updateSelectedValues()
     }
 
+    ctrl.applyLoadingDistance = () => {
+      $timeout(() => {
+        $element.find('div.progress').css({
+          top: ($element.find('table').find('thead')[0].clientHeight || 48) - 4
+        });
+      });
+    }
+
     // Compilação do componente na tela.
     function compileElement() {
       $element.html('')
@@ -306,6 +314,7 @@ function List($compile, listCreator) {
     } catch (err) { }
 
     const handlingGrid = () => {
+      ctrl.applyLoadingDistance();
       if (!ctrl.listConfig) return;
       if (ctrl.listConfig.fixed) {
         $timeout(() => $element.find('table').smartGrid(ctrl.listConfig.fixed));
@@ -407,11 +416,13 @@ function List($compile, listCreator) {
         s = ctrl.replaceAll(s, 'GUMGA_LIST_KEY', 'gumga-list');
       }
       var checkboxColor = ctrl.listConfig.checkboxColor || '#4f8196';
+      var loadingColor = ctrl.listConfig.loadingColor || '#4f8196';
       var activeLineColor = ctrl.listConfig.activeLineColor || '#f5f5f5';
       var hoverLineColor = ctrl.listConfig.hoverLineColor || activeLineColor;
       s = ctrl.replaceAll(s, 'ACTIVE_ROW_COLOR', activeLineColor);
       s = ctrl.replaceAll(s, 'HOVER_ROW_COLOR', hoverLineColor);
       s = ctrl.replaceAll(s, 'CHECKBOX_COLOR', checkboxColor);
+      s = ctrl.replaceAll(s, 'LOADING_COLOR', loadingColor);
       return s;
     }
 

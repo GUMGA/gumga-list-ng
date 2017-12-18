@@ -27,7 +27,7 @@
 
       <div class="col-md-12">
         <div class="col-md-12">
-          <gumga-list data="pessoa.data" name="pessoa2" configuration="tableConfig" page-size="pessoa.pageSize" page-position="bottom"
+          <gumga-list data="pessoa.data" name="pessoa" configuration="tableConfig" page-size="pessoa.pageSize" page-position="bottom"
             page-align="flex-end" count="pessoa.count" page-model="page" sort="createQuery(page, pessoa.pageSize, field, dir)"
             on-row-change="update(row)" on-page-change="createQuery(page, pageSize, field, dir)">
           </gumga-list>
@@ -97,7 +97,7 @@
 
           $scope.tableConfig = {
             columns: 'id, name, login',
-            title: 'Nutrition',
+            // title: 'Nutrition',
             checkbox: true,
             disabledRow: function (row) {
               return row.id == 3 || row.id == 7 || row.id == 16 || row.name == 'GumgaAdmin'
@@ -105,6 +105,9 @@
             materialTheme: true,
             resizable: false,
             ordination: false,
+            empty: {
+              enabled: true
+            },
             selection: "multi",
             searchFunction: (gQuery, page, pageSize, sortField, sortDir) => {
               $scope.pessoa.methods.createQuery()

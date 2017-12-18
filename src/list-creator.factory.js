@@ -174,7 +174,7 @@ function ListCreator() {
         ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}" style="position: relative;">
           <div class="page-select"
-              ng-show="ctrl.getPossibleColumns().length > 0"
+              ng-show="ctrl.getPossibleColumns().length > 0 && !(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))"     
               style="position: absolute;right: 35px;z-index: 10;top: 15px;">
                 <div class="btn-group smart-footer-item">
                   <button class="btn btn-default dropdown-toggle "
@@ -199,7 +199,8 @@ function ListCreator() {
           <div ng-show="(ctrl.listConfig.materialTheme
                         && ((ctrl.listConfig.actions.length > 0
                         || ctrl.listConfig.title)
-                        || ctrl.listConfig.enabledBetweenLines))"
+                        || ctrl.listConfig.enabledBetweenLines))
+                        && !(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))"
                class="{{ctrl.listConfig.materialTheme ? 'panel-actions': ''}}">
               <h4 ng-show="ctrl.listConfig.title">{{ctrl.listConfig.title}}</h4>
               <div class="actions">
@@ -216,13 +217,17 @@ function ListCreator() {
                 </div>
               </div>
           </div>
-          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'TOP' || ctrl.pagePosition.toUpperCase() == 'ALL')"
+          <div ng-show="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'TOP' || ctrl.pagePosition.toUpperCase() == 'ALL') && !(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))"
                class="{{ctrl.listConfig.materialTheme ? 'panel-heading': ''}}"
                style="justify-content: {{ctrl.pageAlign}};">
               ${paginationTemplate}
           </div>
-          <div class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}" style="padding: 0;">
+          <div ng-show="!(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))" class="{{ctrl.listConfig.materialTheme ? 'panel-body': ''}}" style="padding: 0;">
             <div class="table-responsive" style="{{ctrl.maxHeight ? 'max-height: '+ctrl.maxHeight : ''}}">
+              
+              <div class="progress" ng-show="ctrl.loading">
+                <div class="indeterminate"></div>
+              </div>
 
               <table class="${className}" ${config.resizable ? 'resizeable mode="\'BasicResizer\'" ' : ' '} id="${tableId}">
                 <thead>
@@ -246,12 +251,18 @@ function ListCreator() {
               </table>
             </div>
           </div>
-          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL')"
+          <div ng-if="(ctrl.listConfig.materialTheme && ctrl.pageSize) && (ctrl.pagePosition.toUpperCase() == 'BOTTOM' || ctrl.pagePosition.toUpperCase() == 'ALL') && !(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))"                 
                class="{{ctrl.listConfig.materialTheme ? 'panel-footer gumga-list-paginable': ''}}"
                style="justify-content: {{ctrl.pageAlign}};">
-               <div class="signal" ng-show="ctrl.loading"></div>
+               
               ${paginationTemplate}
           </div>
+          
+          <div class="panel-body gumga-list-empty" align="center" ng-show="ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0)">
+              <h3>{{ctrl.listConfig.empty.title ? ctrl.listConfig.empty.title : 'Nenhum registro foi criado'}}</h3>
+              <p>{{ctrl.listConfig.empty.description ? ctrl.listConfig.empty.description : 'Clique em + para criar um novo registro.'}}</p>
+          </div>
+
         </div>
         `;
   }
