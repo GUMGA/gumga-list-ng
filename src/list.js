@@ -154,9 +154,8 @@ function List($compile, listCreator) {
 
     function updateMap(newVal = []) {
       ctrl.selectedMap = ctrl.selectedMap || {};
-      newVal.forEach((value, index) => {
-        ctrl.selectedMap[index] = ctrl.selectedMap[index] || { checkbox: false, value }
-      })
+      if(ctrl.loading) ctrl.selectedMap = {};
+      newVal.forEach((value, index) => ctrl.selectedMap[index] = ctrl.selectedMap[index] || { checkbox: false, value })
       updateSelectedValues()
     }
 
@@ -360,7 +359,7 @@ function List($compile, listCreator) {
         }
         ctrl.pageSize = itensPerPage || ctrl.pageSize;
         ctrl.pageModel = page || ctrl.pageModel;
-
+        ctrl.selectedMap = {};
         ctrl.onPageChange({ page: page, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
       }
     }
@@ -368,6 +367,7 @@ function List($compile, listCreator) {
     ctrl.previousPage = () => {
       if (ctrl.onPageChange && ctrl.existsPreviousPage()) {
         activeLoading();
+        ctrl.selectedMap = {};
         ctrl.onPageChange({ page: ctrl.pageModel - 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
         ctrl.pageModel = ctrl.pageModel - 1;
       }
@@ -376,6 +376,7 @@ function List($compile, listCreator) {
     ctrl.nextPage = () => {
       if (ctrl.onPageChange && ctrl.existsNextPage()) {
         activeLoading();
+        ctrl.selectedMap = {};
         ctrl.onPageChange({ page: ctrl.pageModel + 1, pageSize: ctrl.pageSize, field: ctrl.activeSorted.column, dir: ctrl.activeSorted.direction });
         ctrl.pageModel = ctrl.pageModel + 1;
       }

@@ -27,6 +27,7 @@
 
       <div class="col-md-12">
         <div class="col-md-12">
+          <pre>{{selectedValues | json}}</pre>
           <gumga-list data="pessoa.data" name="pessoa" configuration="tableConfig" page-size="pessoa.pageSize" page-position="bottom"
             page-align="flex-end" count="pessoa.count" page-model="page" sort="createQuery(page, pessoa.pageSize, field, dir)"
             on-row-change="update(row)" on-page-change="createQuery(page, pageSize, field, dir)">
