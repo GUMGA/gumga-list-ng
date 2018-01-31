@@ -135,6 +135,14 @@ function List($compile, listCreator) {
       if (!isLoading(data)) {
         inactiveLoading();
       }
+      if(data){
+        data.filter(row => {
+          if(ctrl.selectedValues.filter(selected => angular.equals(selected, row)).length == 0){
+            ctrl.selectedValues = [];
+            updateMap(data, true);
+          }
+        });
+      }
     }, true);
 
 
@@ -152,8 +160,8 @@ function List($compile, listCreator) {
       return ctrl.selectedValues.filter(val => angular.equals(obj.value, val)).length == 0
     }
 
-    function updateMap(newVal = []) {
-      ctrl.selectedMap = ctrl.selectedMap || {};
+    function updateMap(newVal = [], createNew) {
+      ctrl.selectedMap = ctrl.selectedMap && !createNew ? ctrl.selectedMap : {};
       if(ctrl.loading) ctrl.selectedMap = {};
       newVal.forEach((value, index) => ctrl.selectedMap[index] = ctrl.selectedMap[index] || { checkbox: false, value })
       updateSelectedValues()

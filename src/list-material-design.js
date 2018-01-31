@@ -109,12 +109,12 @@ GUMGA_LIST_KEY .table>thead>tr>th:hover .column-search-container button{
 
 GUMGA_LIST_KEY tr td, GUMGA_LIST_KEY tr th{
   background-color: #FFFFFF;
-  border-top: 1px solid rgba(168, 159, 159, 0.12);
+  border-top: 1px solid rgba(168, 159, 159, 0.12) !important;
 }
 
 GUMGA_LIST_KEY tr:hover td{
   background-color: HOVER_ROW_COLOR;
-  border-top: 1px solid rgba(168, 159, 159, 0.12);
+  border-top: 1px solid rgba(168, 159, 159, 0.12) !important;
 }
 
 /**
