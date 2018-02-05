@@ -452,6 +452,7 @@ GUMGA_LIST_KEY tr td < span:nth-child(n+10) {
 }
 
 GUMGA_LIST_KEY .table-responsive{
+  position: relative;
   border: none;
 }
 

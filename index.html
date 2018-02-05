@@ -28,7 +28,7 @@
       <div class="col-md-12">
         <div class="col-md-12">
           <pre>{{selectedValues.length | json}}</pre>
-          <gumga-list on-click="teste($value)" data="pessoa.data" name="pessoa" configuration="tableConfig" page-size="pessoa.pageSize" page-position="bottom"
+          <gumga-list data="pessoa.data" name="pessoa" configuration="tableConfig" page-size="pessoa.pageSize" page-position="bottom"
             page-align="flex-end" count="pessoa.count" page-model="page" sort="createQuery(page, pessoa.pageSize, field, dir)"
             on-row-change="update(row)" on-page-change="createQuery(page, pageSize, field, dir)">
           </gumga-list>
@@ -94,11 +94,6 @@
           }
 
           $scope.createQuery(1, 10, null, null, '');
-
-          $scope.teste = (value) => {
-            console.log(value)
-            $scope.pessoa.data = $scope.pessoa.data.filter(data => !angular.equals(data, value));
-          }
 
 
           $scope.tableConfig = {
