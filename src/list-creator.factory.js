@@ -63,13 +63,13 @@ function ListCreator() {
         </div>
   `;
 
-  function formatTableHeader(sortField, title) {
+  function formatTableHeader(sortField, title, next) {
     let templateWithSort = `
-        <div style="display: flex">
+        <div style="display: flex; justify-content: ${next.flexColumn}">
         <a ng-click="ctrl.doSort('${sortField}')" class="th-sort">
           ${title}
         </a>
-        <span class="sort-caret-span" style="{{ctrl.activeSorted.column  == '${sortField}' ? '': 'opacity: 0.4;'}}" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
+        <span class="sort-caret-span" style="margin-right: 0;{{ctrl.activeSorted.column  == '${sortField}' ? '': 'opacity: 0.4;'}}" ng-class="ctrl.activeSorted.direction == 'asc' ? 'dropup' : ' ' ">
           <span class="caret"></span>
         </span>
         </div>
@@ -88,10 +88,10 @@ function ListCreator() {
   function generateHeaderColumns(columnsArray = [], hasCheckbox = true, tableId) {
     return columnsArray.reduce((prev, next, index) => {
       return prev += `
-          <th ng-init="ctrl.checkResizer()" id="${tableId}-${next.name}" style="${next.style ? next.style+';' : ''}text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
+          <th ng-init="ctrl.checkResizer()" id="${tableId}-${next.name}" style="${next.style ? next.style + ';' : ''}text-align: ${next.alignColumn}; white-space: normal; {{ctrl.listConfig.fixed && ctrl.listConfig.fixed.left ? '' : 'z-index: 1;'}}" class="${next.size || ' '}">
             <div class="column-container" ng-show="!ctrl.listConfig.columnsConfig[${index}].searching">
               <i ng-show="ctrl.isPosssibleLeft('${next.name}', ${index})"  class="glyphicon glyphicon-triangle-left left" ng-click="ctrl.moveColumn('left', '${next.name}')"></i>
-                ${formatTableHeader(next.sortField, next.title)} 
+                ${formatTableHeader(next.sortField, next.title, next)} 
               <i ng-show="ctrl.isPosssibleRight('${next.name}', ${index})" class="glyphicon glyphicon-triangle-right right" ng-click="ctrl.moveColumn('right', '${next.name}')"></i>
             
               <div class="column-search-container" ng-show="ctrl.listConfig.columnsConfig[${index}].activeSearch">
@@ -124,7 +124,7 @@ function ListCreator() {
 
   function generateBody(columnsArray) {
     return columnsArray.reduce((prev, next) => {
-      if(next.name == "$checkbox"){
+      if (next.name == "$checkbox") {
         return prev += `
             <td class="${next.size} td-checkbox" ng-class="ctrl.checkConditions($value)" ng-style="{'border-left': {{ ctrl.conditionalTableCell($value,'${next.name}') }} }"> ${next.content}</td>`;
       }
@@ -163,15 +163,15 @@ function ListCreator() {
       })
     }
 
-    if(config.materialTheme){
+    if (config.materialTheme) {
       var style = document.createElement('style'), head = document.getElementsByTagName('head')[0];
-          style.innerHTML = styleMaterial;
-          style.id        = 'gumga-list' + ('-'+listName || '');
-          head.insertBefore(style, head.firstChild);
+      style.innerHTML = styleMaterial;
+      style.id = 'gumga-list' + ('-' + listName || '');
+      head.insertBefore(style, head.firstChild);
     }
 
     return `
-        ${config.itemsPerPage.length > 0  && !config.materialTheme ? itemsPerPage : ' '}
+        ${config.itemsPerPage.length > 0 && !config.materialTheme ? itemsPerPage : ' '}
         <div class="{{ctrl.listConfig.materialTheme ? 'gmd panel': ''}}" style="position: relative;">
           <div class="page-select"
               ng-show="ctrl.getPossibleColumns().length > 0 && !(ctrl.listConfig.empty.enabled && (ctrl.data && ctrl.data.length == 0))"     

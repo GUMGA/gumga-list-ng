@@ -45,8 +45,9 @@ function List($compile, listCreator) {
           searchPlaceholder = configuration.searchPlaceholder || 'Buscar...',
           alignRows = configuration.alignRows || 'left',
           widthPorcentage = configuration.widthPorcentage || undefined,
-          conditional = configuration.conditional || angular.noop
-        return { searchPlaceholder, title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows, widthPorcentage, activeSearch }
+          conditional = configuration.conditional || angular.noop,
+          flexColumn = configuration.alignColumn == 'left' ? 'flex-start' : configuration.alignColumn == 'center' ? 'flex-start' : configuration.alignColumn == 'right' ? 'flex-end' : 'flex-start'  
+        return { searchPlaceholder, title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows, widthPorcentage, activeSearch, flexColumn }
       })
     }
 
