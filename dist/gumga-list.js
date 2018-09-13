@@ -920,7 +920,7 @@ function ListCreator() {
   // TEMPLATE DA VERSÃO SEM MATERIAL DESIGN
   var itemsPerPage = '\n      <div class="row">\n        <div class="col-md-offset-9 col-md-2">\n          <div class="text-right" style="line-height: 30px">\n            <span gumga-translate-tag="gumgalist.itemsperpage"></span>\n          </div>\n        </div>\n        <div class="col-md-1">\n          <select class="form-control input-sm" ng-options="item for item in ctrl.listConfig.itemsPerPage" ng-model="ctrl.selectedItemPerPage">\n          </select>\n        </div>\n      </div>';
 
-  var paginationTemplate = '\n        <div class="page-select">\n          <div class="btn-group smart-footer-item">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              P\xE1gina: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="search">\n                <input type="number" min="1" step="1" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');" autofocus max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="P\xE1gina" class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>\n              </li>\n              <li class="effect-ripple {{page == ctrl.pageModel ? \'selected\' : \'\'}}" ng-click="ctrl.changePage(page, ctrl.pageSize)" ng-repeat="page in ctrl.getTotalPage()">\n                {{page}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select" ng-show="ctrl.listConfig.itemsPerPage.length > 0">\n          <div class="btn-group smart-footer-item">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              Itens por p\xE1gina: &nbsp; {{ctrl.pageSize}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? \'selected\' : \'\'}}"\n                  ng-click="ctrl.changePage(ctrl.pageModel, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">\n                {{itemPerPage}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select">\n          <div class="smart-footer-item">\n            {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}\n            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="effect-ripple glyphicon glyphicon-chevron-left"></i></button>\n            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="effect-ripple glyphicon glyphicon-chevron-right"></i></button>\n          </div>\n        </div>\n  ';
+  var paginationTemplate = '\n        <div class="page-select">\n          <div class="btn-group dropdown pagination-drop-wrapper smart-footer-item" ng-init="ctrl.createReverseMode()">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle pagination-drop"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              P\xE1gina: &nbsp; {{ctrl.pageModel}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="search">\n                <input type="number" min="1" step="1" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');" autofocus max="{{ctrl.getTotalPage()[ctrl.getTotalPage().length - 1]}}" placeholder="P\xE1gina" class="form-control" ng-keypress="ctrl.inputPageChange($event)"/>\n              </li>\n              <li class="effect-ripple {{page == ctrl.pageModel ? \'selected\' : \'\'}}" ng-click="ctrl.changePage(page, ctrl.pageSize)" ng-repeat="page in ctrl.getTotalPage()">\n                {{page}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select" ng-show="ctrl.listConfig.itemsPerPage.length > 0">\n          <div class="btn-group smart-footer-item">\n            <button type="button"\n                    class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown"\n                    aria-haspopup="true"\n                    aria-expanded="false">\n              Itens por p\xE1gina: &nbsp; {{ctrl.pageSize}} &nbsp; <span class="caret"></span>\n            </button>\n            <ul class="gmd dropdown-menu">\n              <li class="effect-ripple {{itemPerPage == ctrl.pageSize ? \'selected\' : \'\'}}"\n                  ng-click="ctrl.changePage(ctrl.pageModel, itemPerPage)" ng-repeat="itemPerPage in ctrl.listConfig.itemsPerPage">\n                {{itemPerPage}}\n              </li>\n            </ul>\n          </div>\n        </div>\n\n        <div class="page-select">\n          <div class="smart-footer-item">\n            {{ 1+ (ctrl.pageModel-1) * ctrl.pageSize}} - {{ctrl.roundNumber(ctrl.count, ctrl.pageSize, ctrl.pageModel)}} de {{ctrl.count}}\n            <button class="btn" type="button" ng-disabled="!ctrl.existsPreviousPage()" ng-click="ctrl.previousPage()"><i class="effect-ripple glyphicon glyphicon-chevron-left"></i></button>\n            <button class="btn" type="button" ng-disabled="!ctrl.existsNextPage()" ng-click="ctrl.nextPage()"><i class="effect-ripple glyphicon glyphicon-chevron-right"></i></button>\n          </div>\n        </div>\n  ';
 
   function formatTableHeader(sortField, title, next) {
     var templateWithSort = '\n        <div style="display: flex; justify-content: ' + next.flexColumn + '">\n        <a ng-click="ctrl.doSort(\'' + sortField + '\')" class="th-sort">\n          ' + title + '\n        </a>\n        <span class="sort-caret-span" style="margin-right: 0;{{ctrl.activeSorted.column  == \'' + sortField + '\' ? \'\': \'opacity: 0.4;\'}}" ng-class="ctrl.activeSorted.direction == \'asc\' ? \'dropup\' : \' \' ">\n          <span class="caret"></span>\n        </span>\n        </div>\n';
@@ -1354,6 +1354,42 @@ function List($compile, listCreator) {
           top: ($element.find('table').find('thead')[0].clientHeight || 48) - 4
         });
       });
+    };
+
+    ctrl.createReverseMode = function () {
+      var close = function close(ul) {
+        ul.css({
+          transform: 'translateY(0) rotateX(0deg)',
+          'pointer-events': 'none'
+        });
+      };
+      $timeout(function () {
+        var elmDropdown = $element.find('.pagination-drop-wrapper');
+        var button = $element.find('.panel-footer .page-select .pagination-drop');
+        var ul = button.find('~ .dropdown-menu');
+        elmDropdown.on('hide.bs.dropdown', function () {
+          close(ul);
+        });
+        button.click(function () {
+          var scrollPosition = Math.max(angular.element('html').scrollTop(), angular.element('body').scrollTop());
+          var elementOffset = button.offset().top;
+
+          var ulHeight = ul.height();
+          var elementDistanceTop = elementOffset - scrollPosition;
+          var elementDistanceBottom = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - elementDistanceTop;
+
+          if (elementDistanceBottom < ulHeight && elementDistanceTop > ulHeight) {
+            // 32 é a margin do elemento
+            var translateY = ulHeight - 32;
+            ul.css({
+              transform: 'translateY(-' + translateY + 'px)',
+              'pointer-events': 'all'
+            });
+          } else {
+            close(ul);
+          }
+        });
+      }, 0);
     };
 
     // Compilação do componente na tela.

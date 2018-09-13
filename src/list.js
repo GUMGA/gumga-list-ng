@@ -46,7 +46,7 @@ function List($compile, listCreator) {
           alignRows = configuration.alignRows || 'left',
           widthPorcentage = configuration.widthPorcentage || undefined,
           conditional = configuration.conditional || angular.noop,
-          flexColumn = configuration.alignColumn == 'left' ? 'flex-start' : configuration.alignColumn == 'center' ? 'flex-start' : configuration.alignColumn == 'right' ? 'flex-end' : 'flex-start'  
+          flexColumn = configuration.alignColumn == 'left' ? 'flex-start' : configuration.alignColumn == 'center' ? 'flex-start' : configuration.alignColumn == 'right' ? 'flex-end' : 'flex-start'
         return { searchPlaceholder, title, size, name, content, sortField, conditional, editable, possibleColumn, label, alignColumn: alignColumn, alignRows: alignRows, widthPorcentage, activeSearch, flexColumn }
       })
     }
@@ -136,9 +136,9 @@ function List($compile, listCreator) {
       if (!isLoading(data)) {
         inactiveLoading();
       }
-      if(data){
+      if (data) {
         data.filter(row => {
-          if(ctrl.selectedValues.filter(selected => angular.equals(selected, row)).length == 0){
+          if (ctrl.selectedValues.filter(selected => angular.equals(selected, row)).length == 0) {
             ctrl.selectedValues = [];
             updateMap(data, true);
           }
@@ -163,7 +163,7 @@ function List($compile, listCreator) {
 
     function updateMap(newVal = [], createNew) {
       ctrl.selectedMap = ctrl.selectedMap && !createNew ? ctrl.selectedMap : {};
-      if(ctrl.loading) ctrl.selectedMap = {};
+      if (ctrl.loading) ctrl.selectedMap = {};
       newVal.forEach((value, index) => ctrl.selectedMap[index] = ctrl.selectedMap[index] || { checkbox: false, value })
       updateSelectedValues()
     }
@@ -311,11 +311,47 @@ function List($compile, listCreator) {
       });
     }
 
+    ctrl.createReverseMode = () => {
+      const close = (ul) => {
+        ul.css({
+          transform: 'translateY(0) rotateX(0deg)',
+          'pointer-events': 'none',
+        });
+      }
+      $timeout(() => {
+        const elmDropdown = $element.find('.pagination-drop-wrapper');
+        const button = $element.find('.panel-footer .page-select .pagination-drop');
+        const ul = button.find('~ .dropdown-menu');
+        elmDropdown.on('hide.bs.dropdown', () => {
+          close(ul);
+        })
+        button.click(() => {
+          const scrollPosition = Math.max(angular.element('html').scrollTop(), angular.element('body').scrollTop());
+          const elementOffset = button.offset().top;
+
+          const ulHeight = ul.height();
+          const elementDistanceTop = (elementOffset - scrollPosition);
+          const elementDistanceBottom = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - elementDistanceTop;
+
+          if (elementDistanceBottom < ulHeight && elementDistanceTop > ulHeight) {
+            // 32 é a margin do elemento
+            const translateY = ulHeight - 32;
+            ul.css({
+              transform: `translateY(-${translateY}px)`,
+              'pointer-events': 'all',
+            });
+          } else {
+            close(ul);
+          }
+        });
+      }, 0);
+    }
+
     // Compilação do componente na tela.
     function compileElement() {
       $element.html('')
       const element = angular.element(listCreator.mountTable(ctrl.listConfig, ctrl.class, style, ctrl.getTableId(), ctrl.getStyleMaterialDesign(), ctrl.name))
-      $element.append($compile(element)($scope))
+      $element.append($compile(element)($scope));
     }
     try {
       compileElement();
@@ -563,7 +599,7 @@ function List($compile, listCreator) {
 
     ctrl.searchWithGQuery = (columnName, evt) => {
       ctrl.listConfig.columnsConfig.forEach((column, index) => {
-        if(column.name == columnName){
+        if (column.name == columnName) {
           ctrl.listConfig.columnsConfig[index].searching = column.name == columnName;
           $timeout(() => angular.element(evt.target).closest('th').find('input').focus());
         }
@@ -580,7 +616,7 @@ function List($compile, listCreator) {
       if (ctrl.config.searchFunction && ctrl.data) {
         let gQuery;
         if (!ctrl.data[0] || typeof ctrl.data[0][column.name] == 'string') {
-          let criteria =new Criteria(column.name, ComparisonOperator.CONTAINS, column.searchValue);
+          let criteria = new Criteria(column.name, ComparisonOperator.CONTAINS, column.searchValue);
           criteria.setFieldFunction('%s');
           criteria.setValueFunction('%s');
           gQuery = new GQuery(criteria);

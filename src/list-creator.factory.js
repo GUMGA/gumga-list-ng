@@ -17,9 +17,9 @@ function ListCreator() {
 
   const paginationTemplate = `
         <div class="page-select">
-          <div class="btn-group smart-footer-item">
+          <div class="btn-group dropdown pagination-drop-wrapper smart-footer-item" ng-init="ctrl.createReverseMode()">
             <button type="button"
-                    class="btn btn-default dropdown-toggle"
+                    class="btn btn-default dropdown-toggle pagination-drop"
                     data-toggle="dropdown"
                     aria-haspopup="true"
                     aria-expanded="false">
